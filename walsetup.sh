@@ -63,6 +63,8 @@ BACKENDS=( wal wal on colorz colorz off haishoku haishoku off \
 
 TYPE=( "Not Set" "Solid Color" "Image File" )
 
+MODE=( center "Center" off fill "Fill" on tile "Tile" off full "Full" off cover "Scale" off )
+
 # GUI Configuration
 if [ "$1" = "--gui" ]; then
     ToCONFIG=$(kdialog --geometry 300x120-0-0 --checklist "Available Configs" "${SETUPS[@]}" --separate-output)
@@ -84,8 +86,8 @@ if [ "$1" = "--gui" ]; then
         esac
     done
 
-    [ "$WALL_TYPE" = "Image File" ] && WALL_MODE=$(kdialog --geometry 280x170-0-0 --radiolist "Wallpaper Setup Mode" \
-        center "Center" off fill "Fill" on tile "Tile" off full "Full" off cover "Scale" off || exit) || WALL_MODE="none"
+    [ "$WALL_TYPE" = "Image File" ] && \
+		WALL_MODE=$(kdialog --geometry 280x170-0-0 --radiolist "Wallpaper Setup Mode" ${MODE[@]} || exit)
 else
 	WALL_SCRP="$wallpaperSCRP"
     WALL_BACK="$wallpaperBACK"
@@ -150,10 +152,12 @@ case "$wallpaperTYPE" in
         ;;
     "Image File")
         case "$wallpaperMODE" in
-            "full") fehWALLmode="max" ;;
-            "cover") fehWALLmode="scale" ;;
-            *) fehWALLmode="$wallpaperMODE" ;;
+			"fill") xWallmode="zoom";;
+            "full") fehWALLmode="max" ; xWallmode="maximize";;
+            "cover") fehWALLmode="scale" ; xWallmode="stretch" ;;
+            *) fehWALLmode="$wallpaperMODE" ; xWallmode="$wallpaperMODE";;
         esac
+		command -v xwallpaper >/dev/null && xwallpaper "--$xWallmode" "$wallpaperIMAGE" 
         command -v hsetroot >/dev/null && hsetroot "-$wallpaperMODE" "$wallpaperIMAGE"
         command -v feh >/dev/null && feh --bg-"$fehWALLmode" "$wallpaperIMAGE"
         ;;
