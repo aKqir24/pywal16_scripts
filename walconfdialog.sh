@@ -2,12 +2,12 @@
 
 # Check for required dependencies
 command -v kdialog >/dev/null || { echo "kdialog is not installed. Please install it!"; exit 1; } 
-
+DEFAULT_PYWAL16_OUT_DIR=~/.cache/wal
 # Check for PYWAL16_OUT_DIR
 if [ -z "$PYWAL16_OUT_DIR" ]; then
 	kdialog --msgbox "The 'PYWAL16_OUT_DIR' environment variable is not defined!\n
 	Adding it in your .bashrc file"
-	echo "export PYWAL16_OUT_DIR=~/.cache/wal" >> .bashrc || \
+	echo "export PYWAL16_OUT_DIR=$DEFAULT_PYWAL16_OUT_DIR" >> .bashrc || \
 		$(kdialog --error "The 'PYWAL16_OUT_DIR' environment variable is not defined! 
 			You can define it in your '.bashrc', '.xinitrc', '.profile', etc. using:
 			export PYWAL16_OUT_DIR=/path/to/folder" ; exit 1 )
@@ -15,7 +15,9 @@ fi
 
 WALLPAPER_PATH_TEMP="${PYWAL16_OUT_DIR}/walsetup.cfg"
 [ -e "$WALLPAPER_PATH_TEMP" ] || touch "$WALLPAPER_PATH_TEMP"
-[ -d "$PYWALL16_OUT_DIR" ] || mkdir -p 
+[ -d "$PYWALL16_OUT_DIR" ] || mkdir -p $PYWALL16_OUT_DIR
+# Still pywalfox uses 'The Default OutDir in pywal so just link them to the dafault'
+ln -s $PYWALL16_OUT_DIR $DEFAULT_PYWAL16_OUT_DIR 
 
 # Function to apply wallpaper using pywal16
 applyWAL() {
@@ -59,7 +61,7 @@ if [ "$1" = "--gui" ]; then
     for config in $ToCONFIG; do
         case "$config" in
 			wallSRCP)
-				WALL_SCRP=$(kdialog --textinputbox "Add You Custom External Script:" || exit)
+				WALL_SCRP=$(kdialog --textinputbox "Add A Custom External Script:" || exit)
 				;;
             wallSELC)
                 WALL_SELECT=$(kdialog --yes-label "Select Wallpaper" --no-label "Select Randomly" \
