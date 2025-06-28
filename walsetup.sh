@@ -157,9 +157,9 @@ case "$wallpaperTYPE" in
             "cover") fehWALLmode="scale" ; xWallmode="stretch" ;;
             *) fehWALLmode="$wallpaperMODE" ; xWallmode="$wallpaperMODE";;
         esac
-		command -v xwallpaper >/dev/null && xwallpaper "--$xWallmode" "$wallpaperIMAGE" 
-        command -v hsetroot >/dev/null && hsetroot "-$wallpaperMODE" "$wallpaperIMAGE"
-        command -v feh >/dev/null && feh --bg-"$fehWALLmode" "$wallpaperIMAGE" || \
-			kdialog --error "No wallpaper setter found!\n So wallpaper it not set."
+		command -v xwallpaper >/dev/null && $(xwallpaper "--$xWallmode" "$wallpaperIMAGE" ; exit 0)
+		command -v hsetroot >/dev/null && $(hsetroot "-$wallpaperMODE" "$wallpaperIMAGE" ; exit 0)
+		command -v feh >/dev/null && $(feh --bg-"$fehWALLmode" "$wallpaperIMAGE" ; exit 0 || \
+			kdialog --error "No wallpaper setter found!\n So wallpaper it not set.")
         ;;
 esac
