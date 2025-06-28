@@ -16,12 +16,20 @@ fi
 WALLPAPER_PATH_TEMP="${PYWAL16_OUT_DIR}/walsetup.cfg"
 [ -e "$WALLPAPER_PATH_TEMP" ] || touch "$WALLPAPER_PATH_TEMP"
 [ -d "$PYWALL16_OUT_DIR" ] || mkdir -p $PYWALL16_OUT_DIR
-# Still pywalfox uses 'The Default OutDir in pywal so just link them to the dafault'
-ln -s $PYWALL16_OUT_DIR $DEFAULT_PYWAL16_OUT_DIR 
 
 # Function to apply wallpaper using pywal16
 applyWAL() {
     wal --backend "$2" -i "$1" -n --cols16 lighten --out-dir "$PYWAL16_OUT_DIR"
+
+	# Still pywalfox uses 'The Default OutDir in pywal so just link them to the default'
+	if [ -d "$DEFAULT_PYWAL16_OUT_DIR" ]; then
+		for outFile in "$PYWAL16_OUT_DIR"/*; do
+			filename=$(basename "$outFile")
+			if [ ! -e "$DEFAULT_PYWAL16_OUT_DIR/$filename" ]; then
+				ln -s "$outFile" "$DEFAULT_PYWAL16_OUT_DIR/"
+			fi
+		done
+	fi
 }
 
 # Function to read a specific value from the config
