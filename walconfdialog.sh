@@ -7,20 +7,19 @@ command -v kdialog >/dev/null || { echo "kdialog is not installed. Please instal
 if [ -z "$PYWAL16_OUT_DIR" ]; then
 	kdialog --msgbox "The 'PYWAL16_OUT_DIR' environment variable is not defined!\n
 	Adding it in your .bashrc file"
-	echo "export PYWAL16_OUT_DIR=~/.config" >> .bashrc || \
+	echo "export PYWAL16_OUT_DIR=~/.cache/wal" >> .bashrc || \
 		$(kdialog --error "The 'PYWAL16_OUT_DIR' environment variable is not defined! 
 			You can define it in your '.bashrc', '.xinitrc', '.profile', etc. using:
 			export PYWAL16_OUT_DIR=/path/to/folder" ; exit 1 )
 fi
 
-WALLPAPER_PATH_TEMP="${PYWAL16_OUT_DIR}/pywaldialog.cfg"
+WALLPAPER_PATH_TEMP="${PYWAL16_OUT_DIR}/walsetup.cfg"
 [ -e "$WALLPAPER_PATH_TEMP" ] || touch "$WALLPAPER_PATH_TEMP"
-
+[ -d "$PYWALL16_OUT_DIR" ] || mkdir -p 
 
 # Function to apply wallpaper using pywal16
 applyWAL() {
-    wal --backend "$2" -i "$1" -n --cols16 lighten --out-dir "$PYWAL16_OUT_DIR" || \
-		kdialog --msgbox "The native pywal is not compatible, please update pywal16 v3.8.x where this script uses --colrs16 to be used!"
+    wal --backend "$2" -i "$1" -n --cols16 lighten --out-dir "$PYWAL16_OUT_DIR"
 }
 
 # Function to read a specific value from the config
@@ -30,6 +29,7 @@ readTEMPCONF() {
 
 # Assign configuration values
 assignTEMPCONF() {
+	wallpaperSCRP=$(readTEMPCONF custom_script)
     wallpaperSELC=$(readTEMPCONF select)
     wallpaperIMG=$(readTEMPCONF wallpaper_path)
     wallpaperTYPE=$(readTEMPCONF type)
@@ -40,10 +40,10 @@ assignTEMPCONF() {
 assignTEMPCONF
 
 # Config labels
-configs=( wallSELC "Wallpaper Selection Method" on\
+SETUPS=( wallSELC "Wallpaper Selection Method" on\
 		  wallBACK "Pywal Backend To Use" off\
 		  wallTYPE "Wallpaper Setup Type" on\
-		  wallWDM "WM/DE Restart Command" on
+		  wallSRCP "ADD a External Script" off
 )
 
 BACKENDS=( wal wal on colorz colorz off haishoku haishoku off \
@@ -51,11 +51,16 @@ BACKENDS=( wal wal on colorz colorz off haishoku haishoku off \
 		   schemer2 schemer2 off colorthief colorthief off
 )
 
+TYPE=( "Not Set" "Solid Color" "Image File" )
+
 # GUI Configuration
 if [ "$1" = "--gui" ]; then
-    ToCONFIG=$(kdialog --geometry 300x120-0-0 --checklist "PywalGUI Config" "${configs[@]}" --separate-output)
+    ToCONFIG=$(kdialog --geometry 300x120-0-0 --checklist "Available Configs" "${SETUPS[@]}" --separate-output)
     for config in $ToCONFIG; do
         case "$config" in
+			wallSRCP)
+				WALL_SCRP=$(kdialog --textinputbox "Add You Custom External Script:" || exit)
+				;;
             wallSELC)
                 WALL_SELECT=$(kdialog --yes-label "Select Wallpaper" --no-label "Select Randomly" \
                     --yesnocancel "Changing your pywal Wallpaper Method?" && echo "static" || echo "random")
@@ -64,15 +69,15 @@ if [ "$1" = "--gui" ]; then
                 WALL_BACK=$(kdialog --geometry 300x200-0-0 --radiolist "Pywal Backend In Use" "${BACKENDS[@]}" || exit)
                 ;;
             wallTYPE)
-                WALL_TYPE=$(kdialog --geometry 300x100-0-0 --radiolist "Wallpaper Setup Type" \
-                    none "Not Set" off clr "Solid Color" off img "Image File" on || exit)
+                WALL_TYPE=$(kdialog --geometry 300x100-0-0 --combobox "Wallpaper Setup Type" "${TYPE[@]}" || exit)
                 ;;
         esac
     done
 
-    [ "$WALL_TYPE" = "img" ] && WALL_MODE=$(kdialog --geometry 280x170-0-0 --radiolist "Wallpaper Setup Mode" \
+    [ "$WALL_TYPE" = "Image File" ] && WALL_MODE=$(kdialog --geometry 280x170-0-0 --radiolist "Wallpaper Setup Mode" \
         center "Center" off fill "Fill" on tile "Tile" off full "Full" off cover "Scale" off || exit) || WALL_MODE="none"
 else
+	WALL_SCRP="$wallpaperSCRP"
     WALL_BACK="$wallpaperBACK"
     WALL_SELECT="$wallpaperSELC"
     WALL_TYPE="$wallpaperTYPE"
@@ -107,6 +112,7 @@ type=$WALL_TYPE
 mode=$WALL_MODE
 select=$WALL_SELECT
 backend=$WALL_BACK
+custom_sript=$WALL_SCRP
 EOF
 
 assignTEMPCONF
@@ -119,17 +125,20 @@ else
 fi
 
 # Apply wallpaper colors with pywal16
-applyWAL "$wallpaperIMAGE" "$wallpaperBACK" || applyWAL "$wallpaperIMAGE" "wal"
+applyWAL "$wallpaperIMAGE" "$wallpaperBACK" || \
+	kdialog --msgbox "Backend is not found, using default instead!!" ;\
+	applyWAL "$wallpaperIMAGE" "wal" || \
+	$(kdialog --msgbox "The native pywal is not compatible, please update pywal16 v3.8.x where this script uses --colrs16 to be used!" || exit)
 
 # Set background
 case "$wallpaperTYPE" in
-    "clr")
+    "Solid Color")	
         [ -f "${PYWAL16_OUT_DIR}/colors.sh" ] && . "${PYWAL16_OUT_DIR}/colors.sh"
         convert -size 80x80 xc:"$color8" ~/.cache/solid.png
         command -v hsetroot >/dev/null && hsetroot -solid "$color8"
         command -v feh >/dev/null && feh --bg-fill ~/.cache/solid.png
         ;;
-    "img")
+    "Image File")
         case "$wallpaperMODE" in
             "full") fehWALLmode="max" ;;
             "cover") fehWALLmode="scale" ;;
@@ -139,6 +148,3 @@ case "$wallpaperTYPE" in
         command -v feh >/dev/null && feh --bg-"$fehWALLmode" "$wallpaperIMAGE"
         ;;
 esac
-
-# Reload WM/DE - replace this line based on your system
-command -v i3-msg >/dev/null && i3-msg restart
