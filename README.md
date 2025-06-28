@@ -6,24 +6,35 @@ A bash script using the kdialog library to ease the configuration in [pywal16](h
 > The script may work in the using the normal `pywal` but it may fail to complete some steps of this script, so please use this fork of pywal called [pywal16](https://github.com/eylles/pywal16) in order to complete some steps in the script.
 
 ## SETUP
-First install kdialog & other dependencies:
+_**DEPENDENCIES**_
+- `pywal16`
+- `kdialog`
+- A wallpaper setter (optional):
+  - `feh`
+  - `hsetroot`
+  - `xwallpaper`
 
 - Debian
 ```bash
-  sudo apt install kdialog python3-pip
-  pip install pywal16 --break-system-packages
+  sudo apt install kdialog pipx
+  pipx install pywal16
 ```
 
-- Arch
+- Arch ( AUR )
 ```bash
-  yay -S kdialog 
+  yay -S kdialog pywal16
 ```
-
+Other linux based distro might be different, so it may take to update this `README` file...
+To load the changes set from the GUI...
+<br>
+## USAGE
 Run the following commands in your terminal:
 ```bash
   git clone https://github.com/aKqir24/walconfdialog.git
   cd ~/walsetup
-  bash wallconfdialog.sh --gui
+  bash wallsetup.sh --gui # To setup the config first
 ```
-
-
+After closing the GUI run:
+```bash
+  bash wallsetup.sh 
+```
