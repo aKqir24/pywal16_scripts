@@ -159,6 +159,7 @@ case "$wallpaperTYPE" in
         esac
 		command -v xwallpaper >/dev/null && xwallpaper "--$xWallmode" "$wallpaperIMAGE" 
         command -v hsetroot >/dev/null && hsetroot "-$wallpaperMODE" "$wallpaperIMAGE"
-        command -v feh >/dev/null && feh --bg-"$fehWALLmode" "$wallpaperIMAGE"
+        command -v feh >/dev/null && feh --bg-"$fehWALLmode" "$wallpaperIMAGE" || \
+			kdialog --error "No wallpaper setter found!\n So wallpaper it not set."
         ;;
 esac
