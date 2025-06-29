@@ -1,3 +1,30 @@
+#!/bin/bash
+
+# Check for required dependencies
+command -v kdialog >/dev/null || { echo "kdialog is not installed. Please install it!"; exit 1; } 
+DEFAULT_PYWAL16_OUT_DIR=~/.cache/wal
+# Check for PYWAL16_OUT_DIR
+if [ -z "$PYWAL16_OUT_DIR" ]; then
+	kdialog --msgbox "The 'PYWAL16_OUT_DIR' environment variable is not defined!\n
+	Adding it in your .bashrc file"
+	echo "export PYWAL16_OUT_DIR=$DEFAULT_PYWAL16_OUT_DIR" >> .bashrc || \
+		$(kdialog --error "The 'PYWAL16_OUT_DIR' environment variable is not defined! 
+			You can define it in your '.bashrc', '.xinitrc', '.profile', etc. using:
+			export PYWAL16_OUT_DIR=/path/to/folder" ; exit 1 )
+fi
+
+WALLPAPER_CONF_PATH="$HOME/.config/walsetup.conf"
+[ -e "$WALLPAPER_CONF_PATH" ] || touch "$WALLPAPER_CONF_PATH"
+[ -d $PYWALL16_OUT_DIR ] || mkdir -p $PYWALL16_OUT_DIR
+
+# Function to apply wallpaper using pywal16
+applyWAL() {
+    wal --backend "$2" -i "$1" $3 -n --out-dir "$PYWAL16_OUT_DIR" >/dev/null
+
+	# Still pywalfox uses 'The Default OutDir in pywal so just link them to the default'
+	if [ -d "$DEFAULT_PYWAL16_OUT_DIR" ]; then
+		for outFile in "$PYWAL16_OUT_DIR"/*; do
+			filename=$(basename "$outFile")
 			if [ ! -e "$DEFAULT_PYWAL16_OUT_DIR/$filename" ]; then
 				ln -s "$outFile" "$DEFAULT_PYWAL16_OUT_DIR/"
 			fi
@@ -9,7 +36,7 @@ assignTEMPCONF() {
     while IFS='=' read -r key val; do
         case "$key" in
             gen_color16) wallpaperCLR16=$val ;;
-            custom_script) wallpaperSCRP=$val ;;
+            programs) wallpaperINTS=$val ;;
             select) wallpaperSELC=$val ;;
             wallpaper_path) wallpaperIMG=$val ;;
             type) wallpaperTYPE=$val ;;
@@ -25,7 +52,7 @@ assignTEMPCONF
 SETUPS=( wallSELC "Wallpaper Selection Method" on\
 		  wallBACK "Pywal Backend To Use" off\
 		  wallTYPE "Wallpaper Setup Type" on\
-		  wallSRCP "Add A External Script" off\
+		  wallINTS "Programs To Use Pywal16 Colors" off\
 		  wallCLR16 "16 Color Output" on
 )
 
@@ -35,16 +62,17 @@ BACKENDS=( wal wal on colorz colorz off haishoku haishoku off \
 )
 
 TYPE=( "Not Set" "Solid Color" "Image File" )
-
+INSTANCES=( i3srs "i3status-rs" on firefox "Firefox" on rofi "Rofi" on gtk "Gtk" on qt6 "Qt6" on)
 MODE=( center "Center" off fill "Fill" on tile "Tile" off full "Full" off cover "Scale" off )
 
 # GUI Configuration
 if [ "$1" = "--gui" ]; then
-    ToCONFIG=$(kdialog --geometry 300x190-0-0 --checklist "Available Configs" "${SETUPS[@]}" --separate-output || echo "cancel")
+    ToCONFIG=$(kdialog --geometry 300x190-0-0 --checklist "Available Configs" "${SETUPS[@]}" --separate-output)
     for config in $ToCONFIG; do
         case "$config" in
-			wallSRCP)
-				WALL_SCRP=$(kdialog --textinputbox "Add A Custom External Script:" || exit)
+			wallINTS)
+				WALL_INTS=$(kdialog --geometry 300x10-0-0 --checklist "Programs That Adapts To Pywal16:"\
+					"${INSTANCES[@]}" --separate-output || exit)
 				;;
             wallSELC)
                 WALL_SELECT=$(kdialog --yes-label "Select Wallpaper" --no-label "Random Wallpaper" \
@@ -66,7 +94,7 @@ if [ "$1" = "--gui" ]; then
     [ "$WALL_TYPE" = "Image File" ] && \
 		WALL_MODE=$(kdialog --geometry 280x170-0-0 --radiolist "Wallpaper Setup Mode" ${MODE[@]} || exit 0) || WALL_MODE=none
 else
-	WALL_SCRP="$wallpaperSCRP"
+	WALL_INTS="$wallpaperINTS"
     WALL_BACK="$wallpaperBACK"
     WALL_SELECT="$wallpaperSELC"
     WALL_TYPE="$wallpaperTYPE"
@@ -91,9 +119,9 @@ case "$WALL_SELECT" in
 	"static")
 		[ "$1" = "--gui" ] && WALLPAPER=$(kdialog --getopenfilename "$PYWAL16_OUT_DIR" || echo "$wallpaperIMG") || WALLPAPER="$wallpaperIMG"
 		;;
-	"cancel")
-		exit 0 ;;
 	*)
+		exit 0 ;;
+	"")
 		kdialog --msgbox "Please launch the GUI for configuration: \n$0 --gui"
 		bash $0 --gui ; exit || rm WALLPAPER_PATH_TEMP
 		;;
@@ -109,7 +137,7 @@ type=$WALL_TYPE
 mode=$WALL_MODE
 select=$WALL_SELECT
 backend=$WALL_BACK
-custom_sript=$WALL_SCRP
+programs=$WALL_INTS
 gen_color16=$WALL_CLR16
 EOF
 
@@ -241,6 +269,24 @@ applyWAL "$wallpaper_CACHE" "$wallpaperBACK" "$genCLR16op" || \
 	$(kdialog --msgbox "The native pywal is not compatible, please update pywal16 v3.8.x where this script uses --colrs16 to be used!" || exit 1)
 
 wallSETError() { kdialog --msgbox "No Wallpaper setter found!\nSo wallpaper is not set..."; }
+theming_init="$(dirname "$0")/theming/init.sh"
+for availableINTS in $wallpaperINTS; do
+	case "$availableINTS" in
+		i3srs)
+			configFile="~/.config/i3/status/config.toml"
+			[ -e "$configFile" ] || configFile=$(kdialog --inputbox "Config file Path:" || \
+				mkdir -p $(dirname "$configFile"); touch "$configFile" )
+			i3srs_cmd="bash $(dirname "$0")/theming/toml_theming.sh --i3status-rs "$configFile""
+		;;
+	esac
+done
+
+cat > "$theming_init" <<EOF
+$i3srs_cmd
+EOF
+
+bash $theming_init
+
 case "$wallpaperTYPE" in
     "Solid Color")
         solidwallpaperCACHE=$PYWAL16_OUT_DIR/wallpaper.solid.png
@@ -252,3 +298,4 @@ case "$wallpaperTYPE" in
         set_wallpaper_with_mode "$wallpaper_CACHE" || wallSETError
         ;;
 esac
+
