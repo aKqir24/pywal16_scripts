@@ -240,6 +240,7 @@ applyWAL "$wallpaper_CACHE" "$wallpaperBACK" "$genCLR16op" || \
 	applyWAL "$$wallpaper_CACHE" "wal" "$genCLR16op" || \
 	$(kdialog --msgbox "The native pywal is not compatible, please update pywal16 v3.8.x where this script uses --colrs16 to be used!" || exit 1)
 
+wallSETError() { kdialog --msgbox "No Wallpaper setter found!\nSo wallpaper is not set..."; }
 case "$wallpaperTYPE" in
     "Solid Color")
         solidwallpaperCACHE=$PYWAL16_OUT_DIR/wallpaper.solid.png
