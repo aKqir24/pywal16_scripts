@@ -15,11 +15,11 @@ fi
 
 WALLPAPER_CONF_PATH="$HOME/.config/walsetup.conf"
 [ -e "$WALLPAPER_CONF_PATH" ] || touch "$WALLPAPER_CONF_PATH"
-[ -d "$PYWALL16_OUT_DIR" ] || mkdir -p $PYWALL16_OUT_DIR
+[ -d $PYWALL16_OUT_DIR ] || mkdir -p $PYWALL16_OUT_DIR
 
 # Function to apply wallpaper using pywal16
 applyWAL() {
-    wal --backend "$2" -i "$1" $3 $4 --out-dir "$PYWAL16_OUT_DIR"
+    wal --backend "$2" -i "$1" $3 -n --out-dir "$PYWAL16_OUT_DIR"
 
 	# Still pywalfox uses 'The Default OutDir in pywal so just link them to the default'
 	if [ -d "$DEFAULT_PYWAL16_OUT_DIR" ]; then
@@ -157,43 +157,70 @@ else
 	genCLR16op="--cols16 $wallpaperCLR16"
 fi
 
-# Set background
-skipWall="-n"
 wallSETtry() { 
-	case "$1" in 
-		"solid") kdialog --msgbox "No Solid Color Wallpaper setter found!\nSwitching Image Type Wallpaper to make pywal find your wallpaper setter..." ;;
-		*) kdialog --msgbox "No Wallpaper setter found!\nMaking pywal find your wallpaper setter..." ;;
-	esac
-	skipWall=""
+	kdialog --msgbox "No Wallpaper setter found!\nSo wallpaper is not set..."
 }
+
+# Set background
+# Function to apply wallpaper using various setters and mapped modes
+set_wallpaper_with_mode() {
+    local image_path="$1"
+
+    # Map modes for each setter
+    case "$wallpaperMODE" in
+        "fill") xWallMode="zoom"; fehMode="fill"; nitrogenMode="auto"; swayMode="fill";;
+        "full") xWallMode="maximize"; fehMode="max"; nitrogenMode="scaled"; swayMode="fit";;
+        "tile") xWallMode="tile"; fehMode="tile"; nitrogenMode="tiled"; swayMode="tile";;
+        "center") xWallMode="center"; fehMode="centered"; nitrogenMode="centered"; swayMode="center";;
+        "cover") xWallMode="stretch"; fehMode="scale"; nitrogenMode="zoom"; swayMode="stretch";;
+        *) xWallMode="zoom"; fehMode="fill"; nitrogenMode="auto"; swayMode="fill";;
+    esac
+
+    if command -v xwallpaper >/dev/null; then
+        xwallpaper "--$xWallMode" "$image_path" --daemon && return 0
+    elif command -v hsetroot >/dev/null; then
+        hsetroot "-$wallpaperMODE" "$image_path" && return 0
+    elif command -v feh >/dev/null; then
+        feh --bg-"$fehMode" "$image_path" && return 0
+    elif command -v nitrogen >/dev/null; then
+        nitrogen --set-$nitrogenMode "$image_path" && return 0
+    elif command -v swaybg >/dev/null; then
+        swaybg -i "$image_path" --mode "$swayMode" && return 0
+    elif command -v hyprctl >/dev/null; then
+        hyprctl hyprpaper unload all
+        hyprctl hyprpaper preload "$image_path"
+        hyprctl hyprpaper wallpaper "eDP-1,$image_path" && return 0
+    elif command -v xfconf-query >/dev/null; then
+        xfconf-query --channel xfce4-desktop --property /backdrop/screen0/monitor0/image-style --set 5
+        xfconf-query --channel xfce4-desktop --property /backdrop/screen0/monitor0/image-path --set "$image_path" && return 0
+    elif command -v gsettings >/dev/null; then
+        gsettings set org.gnome.desktop.background picture-uri "file://$image_path"
+        gsettings set org.gnome.desktop.background picture-options "$wallpaperMODE" && return 0
+    elif command -v pcmanfm >/dev/null; then
+        pcmanfm --set-wallpaper "$image_path" && return 0
+    else
+        kdialog --error "No supported wallpaper setter found!" && return 1
+    fi
+}
+
+# Declare A variable and convert the image to png to avoid format errors in some wallpaper setters...
+wallpaper_CACHE=$PYWAL16_OUT_DIR/wallpaper.png
+convert "$wallpaperIMAGE" "$wallpaper_CACHE"
+
+# Apply wallpaper colors with pywal16
+applyWAL "$wallpaper_CACHE" "$wallpaperBACK" "$genCLR16op" || \
+	kdialog --msgbox "Backend is not found, using default instead!!" \
+	applyWAL "$$wallpaper_CACHE" "wal" "$genCLR16op" || \
+	$(kdialog --msgbox "The native pywal is not compatible, please update pywal16 v3.8.x where this script uses --colrs16 to be used!" || exit 1)
 
 case "$wallpaperTYPE" in
     "Solid Color")
-		wallpaperCACHE=$PYWAL16_OUT_DIR/wallpaper.solid.png
+        solidwallpaperCACHE=$PYWAL16_OUT_DIR/wallpaper.solid.png
         [ -f "${PYWAL16_OUT_DIR}/colors.sh" ] && . "${PYWAL16_OUT_DIR}/colors.sh"
-        convert -size 80x80 xc:"$color8" $wallpaper_CACHE
-		command -v xsetroot >/dev/null && xsetroot -solid "$color8" 
-		command -v hsetroot >/dev/null && hsetroot -solid "$color8" 
-		command -v feh >/dev/null && feh --bg-fill "$wallpaperCACHE"
-		command -v xwallpaper >/dev/null && xwallpaper --zoom "$wallpaper_CACHE" --daemon || wallSETtry "solid"
+        convert -size 80x80 xc:"$color8" "$solidwallpaperCACHE"
+        set_wallpaper_with_mode "$solidwallpaperCACHE" || wallSETError
         ;;
     "Image File")
-		wallpaper_CACHE=$PYWAL16_OUT_DIR/wallpaper.png
-        case "$wallpaperMODE" in
-			"fill") xWallmode="zoom";;
-            "full") fehWALLmode="max"; xWallmode="maximize";;
-            "cover") fehWALLmode="scale"; xWallmode="stretch" ;;
-            *) fehWALLmode="$wallpaperMODE" ; xWallmode="$wallpaperMODE";;
-        esac	
-		convert $wallpaperIMAGE $wallpaper_CACHE
-		command -v xwallpaper >/dev/null && $(xwallpaper "--$xWallmode" "$wallpaper_CACHE" --daemon; exit 0)
-		command -v hsetroot >/dev/null && $(hsetroot "-$wallpaperMODE" "$wallpaper_CACHE" ; exit 0)
-		command -v feh >/dev/null && $(feh --bg-"$fehWALLmode" "$wallpaper_CACHE" ; exit 0 ) || wallSETtry
+        set_wallpaper_with_mode "$wallpaper_CACHE" || wallSETError
         ;;
 esac
-
-# Apply wallpaper colors with pywal16
-applyWAL "$wallpaperIMAGE" "$wallpaperBACK" "$skipWall" "$genCLR16op" || \
-	kdialog --msgbox "Backend is not found, using default instead!!" ;\
-	applyWAL "$wallpaperIMAGE" "wal" "$skipWall" "$genCLR16op" || \
-	$(kdialog --msgbox "The native pywal is not compatible, please update pywal16 v3.8.x where this script uses --colrs16 to be used!" || exit 1)
