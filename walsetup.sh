@@ -1,30 +1,3 @@
-#!/bin/bash
-
-# Check for required dependencies
-command -v kdialog >/dev/null || { echo "kdialog is not installed. Please install it!"; exit 1; } 
-DEFAULT_PYWAL16_OUT_DIR=~/.cache/wal
-# Check for PYWAL16_OUT_DIR
-if [ -z "$PYWAL16_OUT_DIR" ]; then
-	kdialog --msgbox "The 'PYWAL16_OUT_DIR' environment variable is not defined!\n
-	Adding it in your .bashrc file"
-	echo "export PYWAL16_OUT_DIR=$DEFAULT_PYWAL16_OUT_DIR" >> .bashrc || \
-		$(kdialog --error "The 'PYWAL16_OUT_DIR' environment variable is not defined! 
-			You can define it in your '.bashrc', '.xinitrc', '.profile', etc. using:
-			export PYWAL16_OUT_DIR=/path/to/folder" ; exit 1 )
-fi
-
-WALLPAPER_CONF_PATH="$HOME/.config/walsetup.conf"
-[ -e "$WALLPAPER_CONF_PATH" ] || touch "$WALLPAPER_CONF_PATH"
-[ -d $PYWALL16_OUT_DIR ] || mkdir -p $PYWALL16_OUT_DIR
-
-# Function to apply wallpaper using pywal16
-applyWAL() {
-    wal --backend "$2" -i "$1" $3 -n --out-dir "$PYWAL16_OUT_DIR"
-
-	# Still pywalfox uses 'The Default OutDir in pywal so just link them to the default'
-	if [ -d "$DEFAULT_PYWAL16_OUT_DIR" ]; then
-		for outFile in "$PYWAL16_OUT_DIR"/*; do
-			filename=$(basename "$outFile")
 			if [ ! -e "$DEFAULT_PYWAL16_OUT_DIR/$filename" ]; then
 				ln -s "$outFile" "$DEFAULT_PYWAL16_OUT_DIR/"
 			fi
@@ -32,20 +5,18 @@ applyWAL() {
 	fi
 }
 
-# Function to read a specific value from the config
-readCONFFILE() {
-    grep "^$1=" "$WALLPAPER_CONF_PATH" | cut -d '=' -f 2-
-}
-
-# Assign configuration values
 assignTEMPCONF() {
-	wallpaperCLR16=$(readCONFFILE gen_color16)
-	wallpaperSCRP=$(readCONFFILE custom_script)
-    wallpaperSELC=$(readCONFFILE select)
-    wallpaperIMG=$(readCONFFILE wallpaper_path)
-    wallpaperTYPE=$(readCONFFILE type)
-    wallpaperMODE=$(readCONFFILE mode)
-    wallpaperBACK=$(readCONFFILE backend)
+    while IFS='=' read -r key val; do
+        case "$key" in
+            gen_color16) wallpaperCLR16=$val ;;
+            custom_script) wallpaperSCRP=$val ;;
+            select) wallpaperSELC=$val ;;
+            wallpaper_path) wallpaperIMG=$val ;;
+            type) wallpaperTYPE=$val ;;
+            mode) wallpaperMODE=$val ;;
+            backend) wallpaperBACK=$val ;;
+        esac
+    done < "$WALLPAPER_CONF_PATH"
 }
 
 assignTEMPCONF
@@ -157,55 +128,111 @@ else
 	genCLR16op="--cols16 $wallpaperCLR16"
 fi
 
-wallSETtry() { 
-	kdialog --msgbox "No Wallpaper setter found!\nSo wallpaper is not set..."
-}
-
 # Set background
 # Function to apply wallpaper using various setters and mapped modes
 set_wallpaper_with_mode() {
     local image_path="$1"
 
-    # Map modes for each setter
+    # Mode mappings
     case "$wallpaperMODE" in
-        "fill") xWallMode="zoom"; fehMode="fill"; nitrogenMode="auto"; swayMode="fill";;
-        "full") xWallMode="maximize"; fehMode="max"; nitrogenMode="scaled"; swayMode="fit";;
-        "tile") xWallMode="tile"; fehMode="tile"; nitrogenMode="tiled"; swayMode="tile";;
-        "center") xWallMode="center"; fehMode="centered"; nitrogenMode="centered"; swayMode="center";;
-        "cover") xWallMode="stretch"; fehMode="scale"; nitrogenMode="zoom"; swayMode="stretch";;
-        *) xWallMode="zoom"; fehMode="fill"; nitrogenMode="auto"; swayMode="fill";;
+        "fill")
+            xWallMode="zoom"; fehMode="fill"; nitrogenMode="auto"; swayMode="fill"
+            hsetrootMode="-fill"; xfceMode=5; gnomeMode="zoom"; pcmanfmMode="fit"
+            ;;
+        "full")
+            xWallMode="maximize"; fehMode="max"; nitrogenMode="scaled"; swayMode="fit"
+            hsetrootMode="-full"; xfceMode=4; gnomeMode="scaled"; pcmanfmMode="stretch"
+            ;;
+        "tile")
+            xWallMode="tile"; fehMode="tile"; nitrogenMode="tiled"; swayMode="tile"
+            hsetrootMode="-tile"; xfceMode=1; gnomeMode="wallpaper"; pcmanfmMode="tile"
+            ;;
+        "center")
+            xWallMode="center"; fehMode="centered"; nitrogenMode="centered"; swayMode="center"
+            hsetrootMode="-center"; xfceMode=2; gnomeMode="centered"; pcmanfmMode="center"
+            ;;
+        "cover")
+            xWallMode="stretch"; fehMode="scale"; nitrogenMode="zoom"; swayMode="stretch"
+            hsetrootMode="-full"; xfceMode=5; gnomeMode="zoom"; pcmanfmMode="stretch"
+            ;;
+        *)
+            xWallMode="zoom"; fehMode="fill"; nitrogenMode="auto"; swayMode="fill"
+            hsetrootMode="-fill"; xfceMode=5; gnomeMode="zoom"; pcmanfmMode="fit"
+            ;;
     esac
-
+	
     if command -v xwallpaper >/dev/null; then
-        xwallpaper "--$xWallMode" "$image_path" --daemon && return 0
+        if xwallpaper "--$xWallMode" "$image_path" --daemon; then
+            return 0	
+        else
+            kdialog --error "Failed to set wallpaper using xwallpaper"
+            return 1
+        fi
     elif command -v hsetroot >/dev/null; then
-        hsetroot "-$wallpaperMODE" "$image_path" && return 0
+        if hsetroot "$hsetrootMode" "$image_path"; then
+            return 0
+        else
+            kdialog --error "Failed to set wallpaper using hsetroot"
+            return 1
+        fi
     elif command -v feh >/dev/null; then
-        feh --bg-"$fehMode" "$image_path" && return 0
+        if feh --bg-"$fehMode" "$image_path"; then
+            return 0
+        else
+            kdialog --error "Failed to set wallpaper using feh"
+            return 1
+        fi
     elif command -v nitrogen >/dev/null; then
-        nitrogen --set-$nitrogenMode "$image_path" && return 0
+        if nitrogen --set-$nitrogenMode "$image_path"; then
+            return 0
+        else
+            kdialog --error "Failed to set wallpaper using nitrogen"
+            return 1
+        fi
     elif command -v swaybg >/dev/null; then
-        swaybg -i "$image_path" --mode "$swayMode" && return 0
-    elif command -v hyprctl >/dev/null; then
-        hyprctl hyprpaper unload all
-        hyprctl hyprpaper preload "$image_path"
-        hyprctl hyprpaper wallpaper "eDP-1,$image_path" && return 0
+        if swaybg -i "$image_path" --mode "$swayMode"; then
+            return 0
+        else
+            kdialog --error "Failed to set wallpaper using swaybg"
+            return 1
+        fi
     elif command -v xfconf-query >/dev/null; then
-        xfconf-query --channel xfce4-desktop --property /backdrop/screen0/monitor0/image-style --set 5
-        xfconf-query --channel xfce4-desktop --property /backdrop/screen0/monitor0/image-path --set "$image_path" && return 0
-    elif command -v gsettings >/dev/null; then
-        gsettings set org.gnome.desktop.background picture-uri "file://$image_path"
-        gsettings set org.gnome.desktop.background picture-options "$wallpaperMODE" && return 0
+        if xfconf-query --channel xfce4-desktop --property /backdrop/screen0/monitor0/image-style --set $xfceMode &&
+           xfconf-query --channel xfce4-desktop --property /backdrop/screen0/monitor0/image-path --set "$image_path"; then
+            return 0
+        else
+            kdialog --error "Failed to set wallpaper using xfconf-query (XFCE)"
+            return 1
+        fi
+	
+	elif command -v gnome-shell >/dev/null; then
+        if gsettings set org.gnome.desktop.background picture-uri "file://$image_path" &&
+           gsettings set org.gnome.desktop.background picture-options "$gnomeMode"; then
+            return 0
+        else
+            kdialog --error "Failed to set wallpaper using gsettings (GNOME)"
+            return 1
+        fi
     elif command -v pcmanfm >/dev/null; then
-        pcmanfm --set-wallpaper "$image_path" && return 0
+        if pcmanfm --set-wallpaper "$image_path" --wallpaper-mode "$pcmanfmMode"; then
+            return 0
+        else
+            kdialog --error "Failed to set wallpaper using pcmanfm"
+            return 1
+        fi
     else
-        kdialog --error "No supported wallpaper setter found!" && return 1
+        kdialog --error "No supported wallpaper setter found!"
+        return 1
     fi
 }
 
 # Declare A variable and convert the image to png to avoid format errors in some wallpaper setters...
 wallpaper_CACHE=$PYWAL16_OUT_DIR/wallpaper.png
-convert "$wallpaperIMAGE" "$wallpaper_CACHE"
+if [[ "$wallpaperIMAGE" == *.png ]]; then
+	cp "$wallpaperIMAGE" "$wallpaper_CACHE"
+else
+	convert "$wallpaperIMAGE" "$wallpaper_CACHE"
+fi
 
 # Apply wallpaper colors with pywal16
 applyWAL "$wallpaper_CACHE" "$wallpaperBACK" "$genCLR16op" || \
