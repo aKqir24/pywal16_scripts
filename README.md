@@ -9,6 +9,7 @@ A bash script using the kdialog library to ease the configuration in [pywal16](h
 _**DEPENDENCIES**_
 - `pywal16`
 - `kdialog`
+- `imagemagick`
 - A wallpaper setter (optional):
   - `feh`
   - `hsetroot`
@@ -16,15 +17,15 @@ _**DEPENDENCIES**_
 
 - Debian
 ```bash
-  sudo apt install kdialog pipx
+  sudo apt install kdialog pipx imagemagick xwallpaper
   pipx install pywal16
 ```
 
 - Arch ( AUR )
 ```bash
-  yay -S kdialog pywal16
+  yay -S kdialog pywal16 imagemagick xwallpaper
 ```
-Other linux based distro might be different, so it may take to update this `README` file...
+Other linux based distro might be different, so it may take to update this `README.md` file...
 To load the changes set from the GUI...
 <br>
 ## USAGE
@@ -32,9 +33,9 @@ Run the following commands in your terminal:
 ```bash
   git clone https://github.com/aKqir24/walconfdialog.git
   cd ~/walsetup
-  bash wallsetup.sh --gui # To setup the config first
+  bash walsetup.sh --gui # To setup the config first
 ```
 After closing the GUI run:
 ```bash
-  bash wallsetup.sh 
+  bash walsetup.sh 
 ```
