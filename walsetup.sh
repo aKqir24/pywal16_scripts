@@ -19,22 +19,26 @@ WALLPAPER_CONF_PATH="$HOME/.config/walsetup.conf"
 
 # Function to apply wallpaper using pywal16
 applyWAL() {
-    wal --backend "$2" -i "$1" $3 -n --out-dir "$PYWAL16_OUT_DIR" >/dev/null
+    wal --backend "$2" -i "$1" $3 -n --out-dir "$PYWAL16_OUT_DIR" #>/dev/null
 
 	# Still pywalfox uses 'The Default OutDir in pywal so just link them to the default'
 	if [ -d "$DEFAULT_PYWAL16_OUT_DIR" ]; then
 		for outFile in "$PYWAL16_OUT_DIR"/*; do
 			filename=$(basename "$outFile")
 			if [ ! -e "$DEFAULT_PYWAL16_OUT_DIR/$filename" ]; then
-				ln -s "$outFile" "$DEFAULT_PYWAL16_OUT_DIR/"
+				ln -s "$outFile" "$DEFAULT_PYWAL16_OUT_DIR/" #>/dev/null
 			fi
 		done
 	fi
+
+	# Apply gtk theme
+	[ -z $wallaperGTKAC ] || sh "$(dirname $0)/theming/gtk/generate.sh" "@color$wallpaperGTKAC"
 }
 
 assignTEMPCONF() {
     while IFS='=' read -r key val; do
         case "$key" in
+			gtk_accent) wallpaperGTKAC=$val ;;
             gen_color16) wallpaperCLR16=$val ;;
             gtk_apply) wallpaperGTK=$val ;;
             select) wallpaperSELC=$val ;;
@@ -52,7 +56,7 @@ assignTEMPCONF
 SETUPS=( wallSELC "Wallpaper Selection Method" on\
 		  wallBACK "Pywal Backend To Use" off\
 		  wallTYPE "Wallpaper Setup Type" on\
-		  wallGTK "Gtk Theme Adapttation" on\
+		  wallGTK "Gtk Theme Adaptation" on\
 		  wallCLR16 "16 Color Output" on
 )
 
@@ -61,16 +65,18 @@ BACKENDS=( wal wal on colorz colorz off haishoku haishoku off \
 		   schemer2 schemer2 off colorthief colorthief off
 )
 
-TYPE=( "Not Set" "Solid Color" "Image File" )
+TYPE=( "None" "Solid" "Image" )
 MODE=( center "Center" off fill "Fill" on tile "Tile" off full "Full" off cover "Scale" off )
+GTKCOLORS=() ; for clrno in {0..15}; do GTKCOLORS+=($clrno) ;done
 
 # GUI Configuration
-if [ "$1" = "--gui" ]; then
-	WALL_GTK=false; WALL_MODE=none
+if [ "$1" = "--gui" ]; then	
 	ToCONFIG=$(kdialog --geometry 300x190-0-0 --checklist "Available Configs" "${SETUPS[@]}" --separate-output)
     for config in $ToCONFIG; do
         case "$config" in
-			wallGTK) unset WALL_GTK; WALL_GTK=true;;
+			wallGTK) 
+				unset WALL_GTK; WALL_GTK=true;\
+				GTK_ACCENT_COLOR=$(kdialog --geometry 200x100-0-0 --combobox "Gtk Accent Color:" "${GTKCOLORS[@]}" || exit) ;;
             wallSELC)
                 WALL_SELECT=$(kdialog --yes-label "Select Wallpaper" --no-label "Random Wallpaper" \
                     --yesno "Changing your pywal Wallpaper Method?" && echo "static" || echo "random")
@@ -79,7 +85,7 @@ if [ "$1" = "--gui" ]; then
                 WALL_BACK=$(kdialog --geometry 300x200-0-0 --radiolist "Pywal Backend In Use" "${BACKENDS[@]}" || exit)
                 ;;
             wallTYPE)
-                WALL_TYPE=$(kdialog --geometry 300x100-0-0 --combobox "Wallpaper Setup Type" "${TYPE[@]}" || exit)
+                WALL_TYPE=$(kdialog --geometry 200x100-0-0 --combobox "Wallpaper Setup Type" "${TYPE[@]}" || exit)
                 ;;
 			wallCLR16)
 				WALL_CLR16=$(kdialog --yes-label "Darken" --no-label "Lighten" \
@@ -88,9 +94,10 @@ if [ "$1" = "--gui" ]; then
         esac
     done
 
-    [ "$WALL_TYPE" = "Image File" ] && unset WALL_MODE \
+    [ "$WALL_TYPE" = "Image File" ] && \
 		WALL_MODE=$(kdialog --geometry 280x170-0-0 --radiolist "Wallpaper Setup Mode" ${MODE[@]} || exit 0) || WALL_MODE=none
 else
+	GTK_ACCENT_COLOR="$wallpaperGTKAC"
 	WALL_GTK="$wallpaperGTK"
     WALL_BACK="$wallpaperBACK"
     WALL_SELECT="$wallpaperSELC"
@@ -135,6 +142,7 @@ mode=$WALL_MODE
 select=$WALL_SELECT
 backend=$WALL_BACK
 gtk_apply=$WALL_GTK
+gtk_accent=$GTK_ACCENT_COLOR
 gen_color16=$WALL_CLR16
 EOF
 
@@ -254,7 +262,10 @@ set_wallpaper_with_mode() {
 # Declare A variable and convert the image to png to avoid format errors in some wallpaper setters...
 wallpaper_CACHE=$PYWAL16_OUT_DIR/wallpaper.png
 if [[ "$wallpaperIMAGE" == *.png ]]; then
-	cp "$wallpaperIMAGE" "$wallpaper_CACHE"
+	[ -e "$wallpaper_CACHE" ] && rm "wallpaper_CACHE" \
+		cp "$wallpaperIMAGE" "$wallpaper_CACHE"
+elif [[ "$wallpaperIMAGE" == *.gif ]]; then
+	convert "$wallpaperIMAGE" -coalesce -flatten "$wallpaper_CACHE"
 else
 	convert "$wallpaperIMAGE" "$wallpaper_CACHE"
 fi
@@ -262,21 +273,19 @@ fi
 # Apply wallpaper colors with pywal16
 applyWAL "$wallpaper_CACHE" "$wallpaperBACK" "$genCLR16op" || \
 	kdialog --msgbox "Backend is not found, using default instead!!" \
-	applyWAL "$$wallpaper_CACHE" "wal" "$genCLR16op" || \
+	applyWAL "$wallpaper_CACHE" "wal" "$genCLR16op" || \
 	$(kdialog --msgbox "The native pywal is not compatible, please update pywal16 v3.8.x where this script uses --colrs16 to be used!" || exit 1)
 
 wallSETError() { kdialog --msgbox "No Wallpaper setter found!\nSo wallpaper is not set..."; }
-[ -z "" ]
 
 case "$wallpaperTYPE" in
-    "Solid Color")
+    "Solid")
         solidwallpaperCACHE=$PYWAL16_OUT_DIR/wallpaper.solid.png
         [ -f "${PYWAL16_OUT_DIR}/colors.sh" ] && . "${PYWAL16_OUT_DIR}/colors.sh"
         convert -size 80x80 xc:"$color8" "$solidwallpaperCACHE"
         set_wallpaper_with_mode "$solidwallpaperCACHE" || wallSETError
         ;;
-    "Image File")
+    "Image")
         set_wallpaper_with_mode "$wallpaper_CACHE" || wallSETError
         ;;
 esac
-
