@@ -17,24 +17,7 @@ WALLPAPER_CONF_PATH="$HOME/.config/walsetup.conf"
 [ -e "$WALLPAPER_CONF_PATH" ] || touch "$WALLPAPER_CONF_PATH"
 [ -d $PYWALL16_OUT_DIR ] || mkdir -p $PYWALL16_OUT_DIR
 
-# Function to apply wallpaper using pywal16
-applyWAL() {
-    wal --backend "$2" -i "$1" $3 -n --out-dir "$PYWAL16_OUT_DIR" #>/dev/null
-
-	# Still pywalfox uses 'The Default OutDir in pywal so just link them to the default'
-	if [ -d "$DEFAULT_PYWAL16_OUT_DIR" ]; then
-		for outFile in "$PYWAL16_OUT_DIR"/*; do
-			filename=$(basename "$outFile")
-			if [ ! -e "$DEFAULT_PYWAL16_OUT_DIR/$filename" ]; then
-				ln -s "$outFile" "$DEFAULT_PYWAL16_OUT_DIR/" #>/dev/null
-			fi
-		done
-	fi
-
-	# Apply gtk theme
-	[ -z $wallaperGTKAC ] || sh "$(dirname $0)/theming/gtk/generate.sh" "@color$wallpaperGTKAC"
-}
-
+# Read/Write config
 assignTEMPCONF() {
     while IFS='=' read -r key val; do
         case "$key" in
@@ -51,6 +34,25 @@ assignTEMPCONF() {
 }
 
 assignTEMPCONF
+
+# Function to apply wallpaper using pywal16
+applyWAL() {
+    wal --backend "$2" -i "$1" $3 -n --out-dir "$PYWAL16_OUT_DIR" >/dev/null
+
+	# Still pywalfox uses 'The Default OutDir in pywal so just link them to the default'
+	if [ -d "$DEFAULT_PYWAL16_OUT_DIR" ]; then
+		for outFile in "$PYWAL16_OUT_DIR"/*; do
+			filename=$(basename "$outFile")
+			if [ ! -e "$DEFAULT_PYWAL16_OUT_DIR/$filename" ]; then
+				ln -s "$outFile" "$DEFAULT_PYWAL16_OUT_DIR/" >/dev/null
+			fi
+		done
+	fi
+
+	# Apply gtk theme
+	[ "$wallpaperGTK" = true ] && bash "$(dirname $0)/theming/gtk/generate.sh" "@color$wallpaperGTKAC"
+}
+
 
 # Config labels
 SETUPS=( wallSELC "Wallpaper Selection Method" on\
@@ -133,6 +135,7 @@ esac
 
 # Save config
 [ -z "$WALL_BACK" ] && WALL_BACK="wal"
+[ -z "$WALL_GTK_ACCENT_COLOR" ] && WALL_GTK_ACCENT_COLOR=2
 [ -z "$WALLPAPER" ] && [ -e "$WALLPAPER_FOLDER" ] && WALLPAPER="$WALLPAPER_FOLDER" 
 
 cat > "$WALLPAPER_CONF_PATH" <<EOF

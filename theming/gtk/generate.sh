@@ -26,7 +26,7 @@ for gtkCSSFile in "${GTK_CSS_FILES[@]}"; do
 
   # Remove/Copy base to working file
   rm "$gtkCSSFile" ; cp "$base_file" "$gtkCSSFile"
-  [ -z "$1" ] && activeColor="$color2" || activeColor="$1"
+  [ -z "$1" ] && activeColor="@color2" || activeColor="$1"
 
   # Apply colors
   sed -i \
