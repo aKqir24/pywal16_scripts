@@ -64,7 +64,4 @@ Things that I might add:
 - `walsetup` support in de's
 - `walsetup` Full icon pywal adptation support
 - `waloml` support for more terminals & appplications
-<<<<<<< HEAD
 
-=======
->>>>>>> fbb64d44470800dc4c73bc4501549d66b945b884
