@@ -36,7 +36,7 @@ assignTEMPCONF() {
     while IFS='=' read -r key val; do
         case "$key" in
             gen_color16) wallpaperCLR16=$val ;;
-            programs) wallpaperINTS=$val ;;
+            gtk_apply) wallpaperGTK=$val ;;
             select) wallpaperSELC=$val ;;
             wallpaper_path) wallpaperIMG=$val ;;
             type) wallpaperTYPE=$val ;;
@@ -52,7 +52,7 @@ assignTEMPCONF
 SETUPS=( wallSELC "Wallpaper Selection Method" on\
 		  wallBACK "Pywal Backend To Use" off\
 		  wallTYPE "Wallpaper Setup Type" on\
-		  wallINTS "Programs To Use Pywal16 Colors" off\
+		  wallGTK "Gtk Theme Adapttation" on\
 		  wallCLR16 "16 Color Output" on
 )
 
@@ -62,18 +62,15 @@ BACKENDS=( wal wal on colorz colorz off haishoku haishoku off \
 )
 
 TYPE=( "Not Set" "Solid Color" "Image File" )
-INSTANCES=( i3srs "i3status-rs" on firefox "Firefox" on rofi "Rofi" on gtk "Gtk" on qt6 "Qt6" on)
 MODE=( center "Center" off fill "Fill" on tile "Tile" off full "Full" off cover "Scale" off )
 
 # GUI Configuration
 if [ "$1" = "--gui" ]; then
-    ToCONFIG=$(kdialog --geometry 300x190-0-0 --checklist "Available Configs" "${SETUPS[@]}" --separate-output)
+	WALL_GTK=false; WALL_MODE=none
+	ToCONFIG=$(kdialog --geometry 300x190-0-0 --checklist "Available Configs" "${SETUPS[@]}" --separate-output)
     for config in $ToCONFIG; do
         case "$config" in
-			wallINTS)
-				WALL_INTS=$(kdialog --geometry 300x10-0-0 --checklist "Programs That Adapts To Pywal16:"\
-					"${INSTANCES[@]}" --separate-output || exit)
-				;;
+			wallGTK) unset WALL_GTK; WALL_GTK=true;;
             wallSELC)
                 WALL_SELECT=$(kdialog --yes-label "Select Wallpaper" --no-label "Random Wallpaper" \
                     --yesno "Changing your pywal Wallpaper Method?" && echo "static" || echo "random")
@@ -91,10 +88,10 @@ if [ "$1" = "--gui" ]; then
         esac
     done
 
-    [ "$WALL_TYPE" = "Image File" ] && \
+    [ "$WALL_TYPE" = "Image File" ] && unset WALL_MODE \
 		WALL_MODE=$(kdialog --geometry 280x170-0-0 --radiolist "Wallpaper Setup Mode" ${MODE[@]} || exit 0) || WALL_MODE=none
 else
-	WALL_INTS="$wallpaperINTS"
+	WALL_GTK="$wallpaperGTK"
     WALL_BACK="$wallpaperBACK"
     WALL_SELECT="$wallpaperSELC"
     WALL_TYPE="$wallpaperTYPE"
@@ -137,7 +134,7 @@ type=$WALL_TYPE
 mode=$WALL_MODE
 select=$WALL_SELECT
 backend=$WALL_BACK
-programs=$WALL_INTS
+gtk_apply=$WALL_GTK
 gen_color16=$WALL_CLR16
 EOF
 
@@ -269,23 +266,7 @@ applyWAL "$wallpaper_CACHE" "$wallpaperBACK" "$genCLR16op" || \
 	$(kdialog --msgbox "The native pywal is not compatible, please update pywal16 v3.8.x where this script uses --colrs16 to be used!" || exit 1)
 
 wallSETError() { kdialog --msgbox "No Wallpaper setter found!\nSo wallpaper is not set..."; }
-theming_init="$(dirname "$0")/theming/init.sh"
-for availableINTS in $wallpaperINTS; do
-	case "$availableINTS" in
-		i3srs)
-			configFile="~/.config/i3/status/config.toml"
-			[ -e "$configFile" ] || configFile=$(kdialog --inputbox "Config file Path:" || \
-				mkdir -p $(dirname "$configFile"); touch "$configFile" )
-			i3srs_cmd="bash $(dirname "$0")/theming/toml_theming.sh --i3status-rs "$configFile""
-		;;
-	esac
-done
-
-cat > "$theming_init" <<EOF
-$i3srs_cmd
-EOF
-
-bash $theming_init
+[ -z "" ]
 
 case "$wallpaperTYPE" in
     "Solid Color")
