@@ -60,8 +60,8 @@ A simple bash script that makes use of kdialog to configure `pywal16`, so that y
 ## Future Plans
 Things that I might add:
 
-- `walsetup` custom bg-color&bgsetup setup
-- `walsetup` support in de's
-- `walsetup` Full icon pywal adptation support
-- `waloml` support for more terminals & appplications
+- [] `walsetup` custom bg-color&bgsetup setup
+- [] `walsetup` support in de's
+- [] `walsetup` Full icon pywal adptation support
+- [] `waloml` support for more terminals & appplications
 
