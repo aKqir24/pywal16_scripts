@@ -1,6 +1,6 @@
 ![Prev](prev.gif)
 
-<img src="tumb.png" align="center"></img>
+<img src="thumb.png" align="center"></img>
 
 A bash script using the kdialog library to ease the configuration in [pywal16](https://github.com/eylles/pywal16).
 
