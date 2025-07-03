@@ -4,14 +4,14 @@
 die() { printf "ERR: %s\n" "$1" >&2 ; sleep 4; exit 1; }
 
 # Function to echo while in process
-process() { echo "$1 Colorsheme is Applied!!"; }
+process() { echo "waloml: $1 Colorsheme is Applied!!"; }
 
 # Function to change toml string value
 write_toml() { tomlq -i -t "$1" "$DEFAULT_CONFIG_FILE"; }
 
 # Load pywal colors
 if . "$PYWAL16_OUT_DIR/colors.sh"; then
-  echo "Wal Colors Script Found!!, exporting..."
+  echo "waloml: Wal Colors Script Found!!, exporting..."
 else
   die "Wal colors not found, exiting script. Have you executed Wal before?"
 fi
@@ -31,6 +31,7 @@ changeI3status_rustCONF() {
 	.theme.overrides.alternating_tint_fg = \"$color0\""
 
 	process "i3status_rs"
+
 }
 
 # Dunst config writer
@@ -92,21 +93,40 @@ changeAlacrittyCONF() {
 }
 
 # Determine which config to apply
-case "$1" in
-	--alacritty)
-		[ -z "$2" ] && DEFAULT_CONFIG_FILE="$HOME/.config/alacritty.toml" || DEFAULT_CONFIG_FILE="$2"
-		 changeAlacrittyCONF || die "Alacritty"
-		;;
-	--dunst)
-		[ -z "$2" ] && DEFAULT_CONFIG_FILE="$HOME/.config/dunst/dunstrc" || DEFAULT_CONFIG_FILE="$2"
-		changeDunstCONF || die "Dunst"
-		;;
-	--i3status-rs)
-		[ -z "$2" ] && DEFAULT_CONFIG_FILE="$HOME/.config/i3status-rs/config.toml" || DEFAULT_CONFIG_FILE="$2"
-		changeI3status_rustCONF || die "i3status-rust"
-		;;
-	*)
-		echo "Usage: $0 --alacritty [CONFIG] | --dunst [CONFIG] | --i3status-rs [CONFIG]"
-		;;
-esac
+executeOPTION() {
+	case "$1" in	
+		--alacritty)
+			[ -e "$2" ] && DEFAULT_CONFIG_FILE="$2" || DEFAULT_CONFIG_FILE="$HOME/.config/alacritty.toml"
+			changeAlacrittyCONF "$DEFAULT_CONFIG_FILE" || die "Alacritty"
+			;;
+		--dunst)
+			[ -e "$2" ] && DEFAULT_CONFIG_FILE="$2" || DEFAULT_CONFIG_FILE="$HOME/.config/dunst/dunstrc"
+			changeDunstCONF || die "Dunst"
+			;;
+		--i3status-rs)
+			[ -e "$2" ] && DEFAULT_CONFIG_FILE=$2 || DEFAULT_CONFIG_FILE="$HOME/.config/i3status-rs/config.toml" 
+			changeI3status_rustCONF || die "i3status-rust"
+			;;
+		*)
+			echo "Usage: $0 --alacritty [CONFIG] | --dunst [CONFIG] | --i3status-rs [CONFIG]"
+			;;
+	esac
+}
 
+# Match the configuration with the option to call with the function
+OPTIONS=( $1 $2 $3 $4 $5 $6 )
+for optionNO in {1..6}; do	
+	if [ "$optionNO" = 3 ] && [ ! -z "$3" ]; then
+		[ -e "$3" ] || executeOPTION "$3" "$4"
+	elif [ "$optionNO" = 4 ] && [ ! -z "$4" ] && [ ! -e "$4" ]; then
+		executeOPTION "$4" "$5"
+	elif [ "$optionNO" = 5 ] && [ ! -z "$5" ]; then
+		[ -e "$5" ] || executeOPTION "$5" "$6"
+	elif [ "$optionNO" = 2 ] && [ ! -z "$2" ] && [ ! -e "$2" ]; then
+		executeOPTION "$2" "$3"
+	elif [ "$optionNO" = 1 ] && [ ! -z "$1" ]; then
+		[ -e "$1" ] || executeOPTION "$1" "$2"
+	fi
+	[ -z "$1" ] && exit 1 ; [ -z "$3" ] && exit 1
+	# DEBUG: echo $optionNO
+done

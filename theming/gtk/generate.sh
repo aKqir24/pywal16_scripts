@@ -1,10 +1,6 @@
 #!/bin/sh
 # Export The Colorscheme
-if . "${PYWAL16_OUT_DIR}/colors.sh"; then
-  echo "Wal Colors Script Found!!, exporting..."
-else
-  die "Wal colors not found, exiting script. Have you executed Wal before?"
-fi
+. "${PYWAL16_OUT_DIR}/colors.sh" || exit 1
 
 # Get current script directory
 WORK_DIR="$(cd "$(dirname "$0")" && pwd)"
