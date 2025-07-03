@@ -82,10 +82,10 @@ exec i3
 
 ## Future Plans
 Things that I might add:
-- [ x ] `walsetup` add verbose option...
+- [x] `walsetup` add verbose option...
 - [ ] `walsetup` custom bg-color&bgsetup setup
 - [ ] `walsetup` support in de's
 - [ ] `walsetup` Full icon pywal adptation support
-- [ x ] `waloml` improve adding options
+- [x] `waloml` improve adding options
 - [ ] `waloml` support for more terminals & appplications
 - [ ] `waloml` fix dumst color generation
