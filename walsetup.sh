@@ -82,6 +82,8 @@ applyWAL() {
 	# Apply gtk theme
 	verbose "Generating & setting gtk theme!"
 	[ "$wallpaperGTK" = true ] && bash "$(dirname $0)/theming/gtk/generate.sh" "@color$wallpaperGTKAC"
+	# reload gtl theme
+	#xsettingsd -c $HOME/.config/xsettingsd/xsettingsd.conf
 }
 
 
@@ -236,36 +238,37 @@ set_wallpaper_with_mode() {
             ;;
     esac
 	
-    if command -v xwallpaper >/dev/null; then
-        xwallpaper "--$xWallMode" "$image_path" --daemon || wallsetERROR
-    elif command -v hsetroot >/dev/null; then
-        hsetroot "$hsetrootMode" "$image_path" || wallsetERROR
-    elif command -v feh >/dev/null; then
-        feh --bg-"$fehMode" "$image_path" || wallsetERROR
-    elif command -v nitrogen >/dev/null; then
-        nitrogen --set-$nitrogenMode "$image_path" || wallsetERROR
-    elif command -v swaybg >/dev/null; then
-        swaybg -i "$image_path" --mode "$swayMode" || wallsetERROR
-    elif command -v xfconf-query >/dev/null; then
-        xfconf-query --channel xfce4-desktop --property /backdrop/screen0/monitor0/image-style --set $xfceMode &&
-        xfconf-query --channel xfce4-desktop --property /backdrop/screen0/monitor0/image-path --set "$image_path" || \
-		wallsetERROR 1
-	elif command -v gnome-shell >/dev/null; then
-        gsettings set org.gnome.desktop.background picture-uri "file://$image_path" &&
-        gsettings set org.gnome.desktop.background picture-options "$gnomeMode" || \
-		wallsetERROR
-    elif command -v pcmanfm >/dev/null; then
-        pcmanfm --set-wallpaper "$image_path" --wallpaper-mode "$pcmanfmMode" || wallsetERROR
-    else
-        kdialog --error "No supported wallpaper setter found!"
-        return 1
-    fi
+	WALL_SETTERS=( xwallpaper hsetroot feh nitrogen swaybg xfconf-query gnome-shell pcmanfm )
+	for wallSETTER in "${WALL_SETTERS[@]}"; do
+		if command -v $wallSETTER >/dev/null; then
+			CH_WALLSETTER="$wallSETTER"
+			break
+		fi
+	done
+    case "$CH_WALLSETTER" in 
+		"${WALL_SETTERS[0]}") xwallpaper "--$xWallMode" "$image_path" --daemon || wallsetERROR;;
+        "${WALL_SETTERS[1]}") hsetroot "$hsetrootMode" "$image_path" || wallsetERROR;;
+        "${WALL_SETTERS[2]}") feh --bg-"$fehMode" "$image_path" || wallsetERROR;;
+        "${WALL_SETTERS[3]}") nitrogen --set-$nitrogenMode "$image_path" || wallsetERROR;;
+        "${WALL_SETTERS[4]}") swaybg -i "$image_path" --mode "$swayMode" || wallsetERROR;;
+		"${WALL_SETTERS[5]}")
+			xfconf-query --channel xfce4-desktop --property /backdrop/screen0/monitor0/image-style --set $xfceMode &&
+			xfconf-query --channel xfce4-desktop --property /backdrop/screen0/monitor0/image-path --set "$image_path" || \
+			wallsetERROR 1
+		;;
+		"${WALL_SETTERS[6]}")
+			gsettings set org.gnome.desktop.background picture-uri "file://$image_path" &&
+			gsettings set org.gnome.desktop.background picture-options "$gnomeMode" || wallsetERROR
+		;;
+		"${WALL_SETTERS[0]}") pcmanfm --set-wallpaper "$image_path" --wallpaper-mode "$pcmanfmMode" || wallsetERROR ;;
+		*) kdialog --error "No supported wallpaper setter found!" return 1 ;;
+	esac
 }
 
 # Declare A variable and convert the image to png to avoid format errors in some wallpaper setters...
-wallpaper_CACHE="$PYWAL16_OUT_DIR/wallpaper.png"
+wallpaper_CACHE="$PYWAL16_OUT_DIR/wallpaper.png" ; [ -f "$wallpaper_CACHE" ] && rm $wallpaper_CACHE
 case "$wallpaperIMAGE" in
-	*.png) rm $wallpaper_CACHE ; cp $wallpaperIMAGE $wallpaper_CACHE ;;
+	*.png) cp $wallpaperIMAGE $wallpaper_CACHE ;;
 	*.gif) convert $wallpaperIMAGE -coalesce -flatten $wallpaper_CACHE ;;
 	*)     convert $wallpaperIMAGE $wallpaper_CACHE ;;
 esac

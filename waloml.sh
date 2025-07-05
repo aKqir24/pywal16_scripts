@@ -10,7 +10,7 @@ process() { [ "$VERBOSE" = true  ] && echo "waloml: $1 colorsheme is applied!!";
 write_toml() { tomlq -i -t "$1" "$(eval echo "$2")">/dev/null || die "tomq cannot process the file $2, so the " ; }
 
 # Load pywal colors
-if . "$PYWAL16_OUT_DIR/colors.sh"; then
+if . "$HOME/.cache/wal/colors.sh"; then
   process "Wal Colors Script Found!!, exporting..."
 else
   die "Wal colors not found, exiting script. Have you executed Wal before?"
