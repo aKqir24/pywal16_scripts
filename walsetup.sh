@@ -82,10 +82,9 @@ applyWAL() {
 	# Apply gtk theme
 	verbose "Generating & setting gtk theme!"
 	[ "$wallpaperGTK" = true ] && bash "$(dirname $0)/theming/gtk/generate.sh" "@color$wallpaperGTKAC"
-	# reload gtl theme
+	# reload gtk theme
 	#xsettingsd -c $HOME/.config/xsettingsd/xsettingsd.conf
 }
-
 
 # Config labels
 SETUPS=( wallSELC "Wallpaper Selection Method" on\
@@ -238,6 +237,7 @@ set_wallpaper_with_mode() {
             ;;
     esac
 	
+	# Set wallpaper with mode according to the available wallpaper setter
 	WALL_SETTERS=( xwallpaper hsetroot feh nitrogen swaybg xfconf-query gnome-shell pcmanfm )
 	for wallSETTER in "${WALL_SETTERS[@]}"; do
 		if command -v $wallSETTER >/dev/null; then
@@ -260,7 +260,7 @@ set_wallpaper_with_mode() {
 			gsettings set org.gnome.desktop.background picture-uri "file://$image_path" &&
 			gsettings set org.gnome.desktop.background picture-options "$gnomeMode" || wallsetERROR
 		;;
-		"${WALL_SETTERS[0]}") pcmanfm --set-wallpaper "$image_path" --wallpaper-mode "$pcmanfmMode" || wallsetERROR ;;
+		"${WALL_SETTERS[7]}") pcmanfm --set-wallpaper "$image_path" --wallpaper-mode "$pcmanfmMode" || wallsetERROR ;;
 		*) kdialog --error "No supported wallpaper setter found!" return 1 ;;
 	esac
 }
@@ -287,9 +287,7 @@ case "$wallpaperTYPE" in
         convert -size 80x80 xc:"$color8" "$solidwallpaperCACHE"
         set_wallpaper_with_mode "$solidwallpaperCACHE" || wallSETError
         ;;
-    "Image")
-        set_wallpaper_with_mode "$wallpaper_CACHE" || wallSETError
-        ;;
+    "Image") set_wallpaper_with_mode "$wallpaper_CACHE" || wallSETError ;;
 	*) kdialog --msgbox "Wallpaper type is not configured!\nSo wallpaper is not set...";; 
 esac
 verbose "Process finished!!"
