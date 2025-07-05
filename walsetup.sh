@@ -44,14 +44,22 @@ WALLPAPER_CONF_PATH="$HOME/.config/walsetup.conf"
 # Read/Write config
 verbose "Reading config file"
 assignTEMPCONF() {
-	[ -f "$WALLPAPER_CONF_PATH" ] || return
-	while IFS='=' read -r key val; do
-		eval "wallpaper${key^^}=\"$val\""
-	done < "$WALLPAPER_CONF_PATH"
+    while IFS='=' read -r key val; do
+        case "$key" in
+			gtk_accent) wallpaperGTKAC=$val ;;
+            gen_color16) wallpaperCLR16=$val ;;
+            gtk_apply) wallpaperGTK=$val ;;
+            select) wallpaperSELC=$val ;;
+            wallpaper_path) wallpaperIMG=$val ;;
+            type) wallpaperTYPE=$val ;;
+            mode) wallpaperMODE=$val ;;
+            backend) wallpaperBACK=$val ;;
+        esac
+    done < "$WALLPAPER_CONF_PATH"
 }
 
 assignTEMPCONF
-
+echo $wallpaperGTK ; exit 0
 # Function to apply wallpaper using pywal16
 applyWAL() {
 	verbose "Running 'pywal' for colorscheme... "
