@@ -39,7 +39,9 @@ fi
 verbose "Writting & verifying config file"
 WALLPAPER_CONF_PATH="$HOME/.config/walsetup.conf"
 [ -e "$WALLPAPER_CONF_PATH" ] || touch "$WALLPAPER_CONF_PATH"
-[ -d "$(eval echo "$PYWAL16_OUT_DIR")" ] || mkdir -p "$(eval echo "$PYWAL16_OUT_DIR")"
+# Expand $PYWAL16_OUT_DIR
+PYWAL16_OUT_DIR=$(eval echo "$PYWAL16_OUT_DIR")
+[ -d "$PYWAL16_OUT_DIR" ] || mkdir -p "$PYWAL16_OUT_DIR"
 
 # Read/Write config
 verbose "Reading config file"
@@ -64,7 +66,7 @@ assignTEMPCONF
 applyWAL() {
 	verbose "Running 'pywal' for colorscheme... "
 	rm -r $DEFAULT_PYWAL16_OUT_DIR
-	wal --backend "$2" -i "$1" $3 -n --out-dir "$(eval echo $PYWAL16_OUT_DIR)" >/dev/null || \
+	wal --backend "$2" -i "$1" $3 -n --out-dir "$PYWAL16_OUT_DIR" >/dev/null || \
 		$(kdialog --msgbox "pywal ran into an error!\nplease run bash $0 --gui first" ; exit 1)
 
 	# Still pywalfox uses 'The Default OutDir in pywal so just link them to the default'
@@ -79,7 +81,7 @@ applyWAL() {
 
 	# Apply gtk theme
 	verbose "Generating & setting gtk theme!"
-	#[ "$wallpaperGTK" = true ] && bash "$(dirname $0)/theming/gtk/generate.sh" "@color$wallpaperGTKAC"
+	[ "$wallpaperGTK" = true ] && bash "$(dirname $0)/theming/gtk/generate.sh" "@color$wallpaperGTKAC"
 }
 
 
@@ -261,11 +263,11 @@ set_wallpaper_with_mode() {
 }
 
 # Declare A variable and convert the image to png to avoid format errors in some wallpaper setters...
-wallpaper_CACHE="$(eval echo $PYWAL16_OUT_DIR)/wallpaper.png"
+wallpaper_CACHE="$PYWAL16_OUT_DIR/wallpaper.png"
 case "$wallpaperIMAGE" in
-	*.png) cp "$wallpaperIMAGE" "$wallpaper_CACHE" ;;
-	*.gif) convert "$wallpaperIMAGE" -coalesce -flatten "$wallpaper_CACHE" ;;
-	*)     convert "$wallpaperIMAGE" "$wallpaper_CACHE" ;;
+	*.png) rm $wallpaper_CACHE ; cp $wallpaperIMAGE $wallpaper_CACHE ;;
+	*.gif) convert $wallpaperIMAGE -coalesce -flatten $wallpaper_CACHE ;;
+	*)     convert $wallpaperIMAGE $wallpaper_CACHE ;;
 esac
 
 # Apply wallpaper colors with pywal16
