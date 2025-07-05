@@ -44,18 +44,10 @@ WALLPAPER_CONF_PATH="$HOME/.config/walsetup.conf"
 # Read/Write config
 verbose "Reading config file"
 assignTEMPCONF() {
-    while IFS='=' read -r key val; do
-        case "$key" in
-			gtk_accent) wallpaperGTKAC=$val ;;
-            gen_color16) wallpaperCLR16=$val ;;
-            gtk_apply) wallpaperGTK=$val ;;
-            select) wallpaperSELC=$val ;;
-            wallpaper_path) wallpaperIMG=$val ;;
-            type) wallpaperTYPE=$val ;;
-            mode) wallpaperMODE=$val ;;
-            backend) wallpaperBACK=$val ;;
-        esac
-    done < "$WALLPAPER_CONF_PATH"
+	[ -f "$WALLPAPER_CONF_PATH" ] || return
+	while IFS='=' read -r key val; do
+		eval "wallpaper${key^^}=\"$val\""
+	done < "$WALLPAPER_CONF_PATH"
 }
 
 assignTEMPCONF
@@ -262,14 +254,11 @@ set_wallpaper_with_mode() {
 
 # Declare A variable and convert the image to png to avoid format errors in some wallpaper setters...
 wallpaper_CACHE="$(eval echo $PYWAL16_OUT_DIR)/wallpaper.png"
-if [[ "$wallpaperIMAGE" == *.png ]]; then
-	[ -e "$wallpaper_CACHE" ] && rm "$wallpaper_CACHE"
-	cp $wallpaperIMAGE $wallpaper_CACHE
-elif [[ "$wallpaperIMAGE" == *.gif ]]; then
-	convert "$wallpaperIMAGE" -coalesce -flatten $wallpaper_CACHE || imageDIRERROR
-else
-	convert "$wallpaperIMAGE" $wallpaper_CACHE
-fi
+case "$wallpaperIMAGE" in
+	*.png) cp "$wallpaperIMAGE" "$wallpaper_CACHE" ;;
+	*.gif) convert "$wallpaperIMAGE" -coalesce -flatten "$wallpaper_CACHE" ;;
+	*)     convert "$wallpaperIMAGE" "$wallpaper_CACHE" ;;
+esac
 
 # Apply wallpaper colors with pywal16
 applyWAL "$wallpaper_CACHE" "$wallpaperBACK" "$genCLR16op" || \
