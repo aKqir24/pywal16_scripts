@@ -59,7 +59,7 @@ assignTEMPCONF() {
 }
 
 assignTEMPCONF
-echo $wallpaperGTK ; exit 0
+
 # Function to apply wallpaper using pywal16
 applyWAL() {
 	verbose "Running 'pywal' for colorscheme... "
