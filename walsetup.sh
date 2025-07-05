@@ -7,23 +7,23 @@ Usage: $0 [OPTIONS]
   --verbose: To show log messages when each step of the script is executed.
   --help: to show how to use this script.
   *: 'not putting any options' loads/applies the configurations."
-for options in {1..2}; do
+
+OPTS=$(getopt -o -v --long verbose,gui,help -- "$@")
+eval set -- "$OPTS"
+while true; do
 	case "$1" in
-		"--gui") CONFIG_MODE=true;;
-		"--verbose") VERBOSE=true;;
-		"--help") echo "wallsetup: $HELP_MESSAGE" ; exit 0 ;;
-		*)
-			case "$2" in
-				"--gui") CONFIG_MODE=true;;
-				"--verbose") VERBOSE=true;;
-			esac
+		--gui) CONFIG_MODE=true; shift ;;
+		--verbose) VERBOSE=true; shift ;;
+		--help) echo "wallsetup: $HELP_MESSAGE"; shift;;
+		--) shift; break ;;
 	esac
 done
 
+#kdialog --msgbox "Please launch the GUI for configuration: \n$0 --gui"
 # Check for required dependencies
 verbose() { [ "$VERBOSE" = true ] && echo "walsetup: $1"; }
 command -v kdialog >/dev/null || { echo "kdialog is not installed. Please install it!"; exit 1; } 
-DEFAULT_PYWAL16_OUT_DIR=~/.cache/wal
+DEFAULT_PYWAL16_OUT_DIR=$HOME/.cache/wal
 # Check for PYWAL16_OUT_DIR
 if [ -z "$PYWAL16_OUT_DIR" ]; then
 	kdialog --msgbox "The 'PYWAL16_OUT_DIR' environment variable is not defined!\n
@@ -33,14 +33,13 @@ if [ -z "$PYWAL16_OUT_DIR" ]; then
 			You can define it in your '.bashrc', '.xinitrc', '.profile', etc. using:
 			export PYWAL16_OUT_DIR=/path/to/folder" ; exit 1 )
 	verbose "Setting up output directory"
-	[ -e "$PYWAL16_OUT_DIR" ] || mkdir -p "$PYWAL16_OUT_DIR"
 fi
 
 # Write config file
 verbose "Writting & verifying config file"
 WALLPAPER_CONF_PATH="$HOME/.config/walsetup.conf"
 [ -e "$WALLPAPER_CONF_PATH" ] || touch "$WALLPAPER_CONF_PATH"
-[ -d $PYWALL16_OUT_DIR ] || mkdir -p $PYWALL16_OUT_DIR
+[ -d "$(eval echo "$PYWAL16_OUT_DIR")" ] || mkdir -p "$(eval echo "$PYWAL16_OUT_DIR")"
 
 # Read/Write config
 verbose "Reading config file"
@@ -64,7 +63,9 @@ assignTEMPCONF
 # Function to apply wallpaper using pywal16
 applyWAL() {
 	verbose "Running 'pywal' for colorscheme... "
-    wal --backend "$2" -i "$1" $3 -n --out-dir "$PYWAL16_OUT_DIR" >/dev/null
+	rm -r $DEFAULT_PYWAL16_OUT_DIR
+	wal --backend "$2" -i "$1" $3 -n --out-dir "$(eval echo $PYWAL16_OUT_DIR)" >/dev/null || \
+		$(kdialog --msgbox "pywal ran into an error!\nplease run bash $0 --gui first" ; exit 1)
 
 	# Still pywalfox uses 'The Default OutDir in pywal so just link them to the default'
 	if [ -d "$DEFAULT_PYWAL16_OUT_DIR" ]; then
@@ -78,7 +79,7 @@ applyWAL() {
 
 	# Apply gtk theme
 	verbose "Generating & setting gtk theme!"
-	[ "$wallpaperGTK" = true ] && bash "$(dirname $0)/theming/gtk/generate.sh" "@color$wallpaperGTKAC"
+	#[ "$wallpaperGTK" = true ] && bash "$(dirname $0)/theming/gtk/generate.sh" "@color$wallpaperGTKAC"
 }
 
 
@@ -102,21 +103,24 @@ GTKCOLORS=() ; for clrno in {0..15}; do GTKCOLORS+=($clrno) ;done
 # GUI Configuration
 if [ "$CONFIG_MODE" = true ]; then	
 	verbose "Running kdialog for configuration..."
-	ToCONFIG=$(kdialog --geometry 300x190-0-0 --checklist "Available Configs" "${SETUPS[@]}" --separate-output)
+	cancelCONFIG() { verbose "Configuration Gui was canceled!, it might cause some problems when loading the configuration!"; exit 0; }
+	ToCONFIG=$( kdialog --checklist "Available Configs" "${SETUPS[@]}" --separate-output )
+	[ -z "$ToCONFIG" ] && cancelCONFIG
     for config in $ToCONFIG; do
         case "$config" in
 			wallGTK) 
 				unset WALL_GTK; WALL_GTK=true;\
-				GTK_ACCENT_COLOR=$(kdialog --geometry 200x100-0-0 --combobox "Gtk Accent Color:" "${GTKCOLORS[@]}" || exit) ;;
+				GTK_ACCENT_COLOR=$(kdialog --combobox "Gtk Accent Color:" "${GTKCOLORS[@]}" || cancelCONFIG ) 
+				;;
             wallSELC)
                 WALL_SELECT=$(kdialog --yes-label "Select Wallpaper" --no-label "Random Wallpaper" \
                     --yesno "Changing your pywal Wallpaper Method?" && echo "static" || echo "random")
                 ;;
             wallBACK)
-                WALL_BACK=$(kdialog --geometry 300x200-0-0 --radiolist "Pywal Backend In Use" "${BACKENDS[@]}" || exit)
+                WALL_BACK=$(kdialog --radiolist "Pywal Backend In Use" "${BACKENDS[@]}" || cancelCONFIG )
                 ;;
             wallTYPE)
-                WALL_TYPE=$(kdialog --geometry 200x100-0-0 --combobox "Wallpaper Setup Type" "${TYPE[@]}" || exit)
+                WALL_TYPE=$(kdialog --combobox "Wallpaper Setup Type" "${TYPE[@]}" || cancelCONFIG )
                 ;;
 			wallCLR16)
 				WALL_CLR16=$(kdialog --yes-label "Darken" --no-label "Lighten" \
@@ -125,8 +129,9 @@ if [ "$CONFIG_MODE" = true ]; then
         esac
     done
 
-    [ "$WALL_TYPE" = "Image File" ] && \
-		WALL_MODE=$(kdialog --geometry 280x170-0-0 --radiolist "Wallpaper Setup Mode" ${MODE[@]} || exit 0) || WALL_MODE=none
+    [ "$WALL_TYPE" = "Image" ] && \
+		WALL_MODE=$(kdialog --radiolist "Wallpaper Setup Mode" ${MODE[@]} || exit 0) || WALL_MODE=none
+
 else
 	verbose "Using the previously configured settings"
 	GTK_ACCENT_COLOR="$wallpaperGTKAC"
@@ -156,10 +161,8 @@ case "$WALL_SELECT" in
 	"static")
 		[ "$CONFIG_MODE" = true ] && WALLPAPER=$(kdialog --getopenfilename "$PYWAL16_OUT_DIR" || echo "$wallpaperIMG") || WALLPAPER="$wallpaperIMG"
 		;;
-	*)
-		exit 0 ;;
-	"")
-		kdialog --msgbox "Please launch the GUI for configuration: \n$0 --gui"
+	"")	
+		kdialog --msgbox "Wallpaper type is not configured!\nSo wallpaper is not set..."
 		bash $0 --gui ; exit || rm WALLPAPER_PATH_TEMP
 		;;
 esac
@@ -198,7 +201,7 @@ else
 fi
 
 # Set background
-wallsetERROR() { kdialog --error "Failed to set wallpaper..."; exit $1; }
+wallsetERROR() { kdialog --error "Failed to set wallpaper..."; exit 1; }
 # Function to apply wallpaper using various setters and mapped modes
 set_wallpaper_with_mode() {
     local image_path="$1"
@@ -232,15 +235,15 @@ set_wallpaper_with_mode() {
     esac
 	
     if command -v xwallpaper >/dev/null; then
-        xwallpaper "--$xWallMode" "$image_path" --daemon || wallsetERROR 1
+        xwallpaper "--$xWallMode" "$image_path" --daemon || wallsetERROR
     elif command -v hsetroot >/dev/null; then
-        hsetroot "$hsetrootMode" "$image_path" || wallsetERROR 1
+        hsetroot "$hsetrootMode" "$image_path" || wallsetERROR
     elif command -v feh >/dev/null; then
-        feh --bg-"$fehMode" "$image_path" || wallsetERROR 1
+        feh --bg-"$fehMode" "$image_path" || wallsetERROR
     elif command -v nitrogen >/dev/null; then
-        nitrogen --set-$nitrogenMode "$image_path" || wallsetERROR 1
+        nitrogen --set-$nitrogenMode "$image_path" || wallsetERROR
     elif command -v swaybg >/dev/null; then
-        swaybg -i "$image_path" --mode "$swayMode" || wallsetERROR 1
+        swaybg -i "$image_path" --mode "$swayMode" || wallsetERROR
     elif command -v xfconf-query >/dev/null; then
         xfconf-query --channel xfce4-desktop --property /backdrop/screen0/monitor0/image-style --set $xfceMode &&
         xfconf-query --channel xfce4-desktop --property /backdrop/screen0/monitor0/image-path --set "$image_path" || \
@@ -248,9 +251,9 @@ set_wallpaper_with_mode() {
 	elif command -v gnome-shell >/dev/null; then
         gsettings set org.gnome.desktop.background picture-uri "file://$image_path" &&
         gsettings set org.gnome.desktop.background picture-options "$gnomeMode" || \
-		wallsetERROR 1
+		wallsetERROR
     elif command -v pcmanfm >/dev/null; then
-        pcmanfm --set-wallpaper "$image_path" --wallpaper-mode "$pcmanfmMode" || wallsetERROR 1
+        pcmanfm --set-wallpaper "$image_path" --wallpaper-mode "$pcmanfmMode" || wallsetERROR
     else
         kdialog --error "No supported wallpaper setter found!"
         return 1
@@ -258,25 +261,20 @@ set_wallpaper_with_mode() {
 }
 
 # Declare A variable and convert the image to png to avoid format errors in some wallpaper setters...
-wallpaper_CACHE="$PYWAL16_OUT_DIR/wallpaper.png"
-imageDIRERROR() { 
-	kdialog --error "Avoid using '~' or '', e.g., export PYWAL16_OUT_DIR='~/.cache/wal'\nor other symbols which is not a directory...!\nGood example is:\nexport PYWAL16_OUT_DIR=~/.cache/wal"
-	exit 1
-}
+wallpaper_CACHE="$(eval echo $PYWAL16_OUT_DIR)/wallpaper.png"
 if [[ "$wallpaperIMAGE" == *.png ]]; then
 	[ -e "$wallpaper_CACHE" ] && rm "$wallpaper_CACHE"
-	cp $wallpaperIMAGE $wallpaper_CACHE || imageDIRERROR
+	cp $wallpaperIMAGE $wallpaper_CACHE
 elif [[ "$wallpaperIMAGE" == *.gif ]]; then
 	convert "$wallpaperIMAGE" -coalesce -flatten $wallpaper_CACHE || imageDIRERROR
 else
-	convert "$wallpaperIMAGE" $wallpaper_CACHE || imageDIRERROR
+	convert "$wallpaperIMAGE" $wallpaper_CACHE
 fi
-echo $wallpaperIMAGE $echo $wallpaper_CACHE
+
 # Apply wallpaper colors with pywal16
 applyWAL "$wallpaper_CACHE" "$wallpaperBACK" "$genCLR16op" || \
 	kdialog --msgbox "Backend is not found, using default instead!!" \
-	applyWAL "$wallpaper_CACHE" "wal" "$genCLR16op" || \
-	$(kdialog --msgbox "pywal ran into an error!\nplease run bash $0 --gui first" || exit 1)
+	applyWAL "$wallpaper_CACHE" "wal" "$genCLR16op"	
 
 wallSETError() { kdialog --msgbox "No Wallpaper setter found!\nSo wallpaper is not set..."; }
 verbose "Settings wallpaper..."
@@ -290,5 +288,6 @@ case "$wallpaperTYPE" in
     "Image")
         set_wallpaper_with_mode "$wallpaper_CACHE" || wallSETError
         ;;
+	*) kdialog --msgbox "Wallpaper type is not configured!\nSo wallpaper is not set...";; 
 esac
 verbose "Process finished!!"

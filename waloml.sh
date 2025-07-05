@@ -1,17 +1,17 @@
 #!/bin/sh
 
 # Function to display error and quit
-die() { printf "ERR: %s\n" "$1" >&2 ; sleep 4; exit 1; }
+die() { printf "waloml: [ERROR] %s\n" "$1 colorsceme cannot be set!!">&2 ; sleep 4; exit 1; }
 
 # Function to echo while in process
-process() { echo "waloml: $1 Colorsheme is Applied!!"; }
+process() { [ "$VERBOSE" = true  ] && echo "waloml: $1 colorsheme is applied!!"; }
 
 # Function to change toml string value
-write_toml() { tomlq -i -t "$1" "$DEFAULT_CONFIG_FILE"; }
+write_toml() { tomlq -i -t "$1" "$(eval echo "$2")">/dev/null || die "tomq cannot process the file $2, so the " ; }
 
 # Load pywal colors
 if . "$PYWAL16_OUT_DIR/colors.sh"; then
-  echo "waloml: Wal Colors Script Found!!, exporting..."
+  process "Wal Colors Script Found!!, exporting..."
 else
   die "Wal colors not found, exiting script. Have you executed Wal before?"
 fi
@@ -28,10 +28,9 @@ changeI3status_rustCONF() {
 	.theme.overrides.critical_bg = \"$color1\" |
 	.theme.overrides.critical_fg = \"$color0\" |
 	.theme.overrides.alternating_tint_bg = \"$color0\" |
-	.theme.overrides.alternating_tint_fg = \"$color0\""
+	.theme.overrides.alternating_tint_fg = \"$color0\"" "$1"
 
 	process "i3status_rs"
-
 }
 
 # Dunst config writer
@@ -46,7 +45,7 @@ changeDunstCONF() {
 
 	.urgency_critical.background = \"$color0\" |
 	.urgency_critical.foreground = \"$color15\" |
-	.urgency_critical.frame_color = \"$color1\""
+	.urgency_critical.frame_color = \"$color1\"" "$1"
 
 	process "Dunst"
 }
@@ -87,46 +86,38 @@ changeAlacrittyCONF() {
 	.colors.bright.blue = \"$color12\" |
 	.colors.bright.magenta = \"$color13\" |
 	.colors.bright.cyan = \"$color14\" |
-	.colors.bright.white = \"$color15\""
+	.colors.bright.white = \"$color15\"" "$1"
 
 	process "Alacritty"
 }
 
-# Determine which config to apply
-executeOPTION() {
-	case "$1" in	
+# Match the configuration with the option to apply
+HELP_TXT="Usage: bash $0 --alacritty=[CONFIG], --dunst=[CONFIG], --i3status-rs=[CONFIG]"
+[ -z "$1" ] && echo $HELP_TXT
+OPTS=$(getopt -o -v --long verbose,alacritty::,dunst::,i3status-rs:: -- "$@")
+eval set -- "$OPTS"
+while true; do
+	case $1 in
+		--verbose) VERBOSE=true; shift ;;
 		--alacritty)
-			[ -e "$2" ] && DEFAULT_CONFIG_FILE="$2" || DEFAULT_CONFIG_FILE="$HOME/.config/alacritty.toml"
-			changeAlacrittyCONF "$DEFAULT_CONFIG_FILE" || die "Alacritty"
+			ALACRITTY_CONFIG_FILE="${2:-$HOME/.config/alacritty.toml}"
+			changeAlacrittyCONF $ALACRITTY_CONFIG_FILE
+			shift 2
 			;;
 		--dunst)
-			[ -e "$2" ] && DEFAULT_CONFIG_FILE="$2" || DEFAULT_CONFIG_FILE="$HOME/.config/dunst/dunstrc"
-			changeDunstCONF || die "Dunst"
+			DUNST_CONFIG_FILE="${2:-$HOME/.config/dunst/dunstrc}"
+			changeDunstCONF $DUNST_CONFIG_FILE
+			shift 2
 			;;
 		--i3status-rs)
-			[ -e "$2" ] && DEFAULT_CONFIG_FILE=$2 || DEFAULT_CONFIG_FILE="$HOME/.config/i3status-rs/config.toml" 
-			changeI3status_rustCONF || die "i3status-rust"
+			I3STATUS_CONFIG_FILE="${2:-$HOME/.config/i3status-rs/config.toml}"
+			changeI3status_rustCONF $I3STATUS_CONFIG_FILE
+			shift 2
 			;;
+		--) shift ; break ;;
 		*)
-			echo "Usage: $0 --alacritty [CONFIG] | --dunst [CONFIG] | --i3status-rs [CONFIG]"
+			echo "$HELP_TXT"	
+			break 
 			;;
 	esac
-}
-
-# Match the configuration with the option to call with the function
-OPTIONS=( $1 $2 $3 $4 $5 $6 )
-for optionNO in {1..6}; do	
-	if [ "$optionNO" = 3 ] && [ ! -z "$3" ]; then
-		[ -e "$3" ] || executeOPTION "$3" "$4"
-	elif [ "$optionNO" = 4 ] && [ ! -z "$4" ] && [ ! -e "$4" ]; then
-		executeOPTION "$4" "$5"
-	elif [ "$optionNO" = 5 ] && [ ! -z "$5" ]; then
-		[ -e "$5" ] || executeOPTION "$5" "$6"
-	elif [ "$optionNO" = 2 ] && [ ! -z "$2" ] && [ ! -e "$2" ]; then
-		executeOPTION "$2" "$3"
-	elif [ "$optionNO" = 1 ] && [ ! -z "$1" ]; then
-		[ -e "$1" ] || executeOPTION "$1" "$2"
-	fi
-	[ -z "$1" ] && exit 1 ; [ -z "$3" ] && exit 1
-	# DEBUG: echo $optionNO
 done

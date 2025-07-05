@@ -1,7 +1,7 @@
 #!/bin/sh
 ROFI_THEME_FILE=$HOME/.config/rofi/colors.rasi
 [ -e $ROFI_THEME_FILE ] || touch $ROFI_THEME_FILE
-if . "${PYWAL16_OUT_DIR}/colors.sh"; then
+if . "$(eval echo $PYWAL16_OUT_DIR)/colors.sh"; then
   echo "Wal Colors Script Found!!, exporting..."
 else
   die "Wal colors not found, exiting script. Have you executed Wal before?"
