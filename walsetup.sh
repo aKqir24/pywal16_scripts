@@ -113,7 +113,8 @@ if [ "$CONFIG_MODE" = true ]; then
         case "$config" in
 			wallGTK) 
 				unset WALL_GTK; WALL_GTK=true;\
-				GTK_ACCENT_COLOR=$(kdialog --combobox "Gtk Accent Color:" "${GTKCOLORS[@]}" || cancelCONFIG ) 
+				GTK_ACCENT_COLOR=$(kdialog --yesno "Change current gtk accent color?" && \
+				kdialog --combobox "Gtk Accent Color:" "${GTKCOLORS[@]}" || echo "$wallpaperGTKAC" || cancelCONFIG )
 				;;
             wallSELC)
                 WALL_SELECT=$(kdialog --yes-label "Select Wallpaper" --no-label "Random Wallpaper" \
@@ -273,21 +274,27 @@ case "$wallpaperIMAGE" in
 	*)     convert $wallpaperIMAGE $wallpaper_CACHE ;;
 esac
 
+callTOAPPLYpywall() {
 # Apply wallpaper colors with pywal16
 applyWAL "$wallpaper_CACHE" "$wallpaperBACK" "$genCLR16op" || \
 	kdialog --msgbox "Backend is not found, using default instead!!" \
 	applyWAL "$wallpaper_CACHE" "wal" "$genCLR16op"	
+}
 
 wallSETError() { kdialog --msgbox "No Wallpaper setter found!\nSo wallpaper is not set..."; }
-verbose "Settings wallpaper..."
-case "$wallpaperTYPE" in
-    "Solid")
-        solidwallpaperCACHE=$PYWAL16_OUT_DIR/wallpaper.solid.png
-        [ -f "${PYWAL16_OUT_DIR}/colors.sh" ] && . "${PYWAL16_OUT_DIR}/colors.sh"
-        convert -size 80x80 xc:"$color8" "$solidwallpaperCACHE"
-        set_wallpaper_with_mode "$solidwallpaperCACHE" || wallSETError
-        ;;
-    "Image") set_wallpaper_with_mode "$wallpaper_CACHE" || wallSETError ;;
-	*) kdialog --msgbox "Wallpaper type is not configured!\nSo wallpaper is not set...";; 
-esac
+
+setwallpaperTYPE() {
+	verbose "Settings wallpaper..."
+	case "$wallpaperTYPE" in
+		"Solid")
+			solidwallpaperCACHE=$PYWAL16_OUT_DIR/wallpaper.solid.png
+			[ -f "${PYWAL16_OUT_DIR}/colors.sh" ] && . "${PYWAL16_OUT_DIR}/colors.sh"
+			convert -size 80x80 xc:"$color8" "$solidwallpaperCACHE"
+			set_wallpaper_with_mode "$solidwallpaperCACHE" || wallSETError
+			;;
+		"Image") set_wallpaper_with_mode "$wallpaper_CACHE" || wallSETError ;;
+		*) kdialog --msgbox "Wallpaper type is not configured!\nSo wallpaper is not set...";; 
+	esac
+}
+callTOAPPLYpywall & setwallpaperTYPE
 verbose "Process finished!!"
