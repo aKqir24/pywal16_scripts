@@ -8,8 +8,8 @@ Usage: $0 [OPTIONS]
   --help: to show how to use this script.
   *: 'not putting any options' loads/applies the configurations."
 
-OPTS=$(getopt -o -v --long verbose,gui,help -- "$@")
-eval set -- "$OPTS"
+# Options To be used
+OPTS=$(getopt -o -v --long verbose,gui,help -- "$@") ; eval set -- "$OPTS"
 while true; do
 	case "$1" in
 		--gui) CONFIG_MODE=true; shift ;;
@@ -19,18 +19,23 @@ while true; do
 	esac
 done
 
-#kdialog --msgbox "Please launch the GUI for configuration: \n$0 --gui"
 # Check for required dependencies
+command -v kdialog >/dev/null || { echo "kdialog is not installed. Please install it!"; exit 1; }
+
+# Functions than is defined to handle disagreements, errors, and info's
 verbose() { [ "$VERBOSE" = true ] && echo "walsetup: $1"; }
-command -v kdialog >/dev/null || { echo "kdialog is not installed. Please install it!"; exit 1; } 
-DEFAULT_PYWAL16_OUT_DIR=$HOME/.cache/wal
+wallsetERROR() { kdialog --error "Failed to set wallpaper..."; exit 1; }
+wallSETTERError() { kdialog --msgbox "No Wallpaper setter found!\nSo wallpaper is not set..."; }
+cancelCONFIG() { verbose "Configuration Gui was canceled!, it might cause some problems when loading the configuration!"; exit 0; }
+
 # Check for PYWAL16_OUT_DIR
-if [ -z "$PYWAL16_OUT_DIR" ]; then
+DEFAULT_PYWAL16_OUT_DIR=$HOME/.cache/wal
+if [ -z "$PYWAL16_OUT_DIR" -o ! -d "$PYWAL16_OUT_DIR" ]; then
 	kdialog --msgbox "The 'PYWAL16_OUT_DIR' environment variable is not defined!\n
 	Adding it in your .bashrc file"
 	echo "export PYWAL16_OUT_DIR=$DEFAULT_PYWAL16_OUT_DIR" >> "$HOME"/.bashrc || \
-		$(kdialog --error "The 'PYWAL16_OUT_DIR' environment variable is not defined! 
-			You can define it in your '.bashrc', '.xinitrc', '.profile', etc. using:
+		$(kdialog --error "The 'PYWAL16_OUT_DIR' environment variable is not defined!\n
+			You can define it in your '.bashrc', '.xinitrc', '.profile', etc. using:\n
 			export PYWAL16_OUT_DIR=/path/to/folder" ; exit 1 )
 	verbose "Setting up output directory"
 fi
@@ -39,8 +44,6 @@ fi
 verbose "Writting & verifying config file"
 WALLPAPER_CONF_PATH="$HOME/.config/walsetup.conf"
 [ -e "$WALLPAPER_CONF_PATH" ] || touch "$WALLPAPER_CONF_PATH"
-# Expand $PYWAL16_OUT_DIR
-PYWAL16_OUT_DIR=$(eval echo "$PYWAL16_OUT_DIR")
 [ -d "$PYWAL16_OUT_DIR" ] || mkdir -p "$PYWAL16_OUT_DIR"
 
 # Read/Write config
@@ -48,7 +51,7 @@ verbose "Reading config file"
 assignTEMPCONF() {
     while IFS='=' read -r key val; do
         case "$key" in
-			gtk_accent) wallpaperGTKAC=$val ;;
+						gtk_accent) wallpaperGTKAC=$val ;;
             gen_color16) wallpaperCLR16=$val ;;
             gtk_apply) wallpaperGTK=$val ;;
             select) wallpaperSELC=$val ;;
@@ -72,18 +75,18 @@ applyWAL() {
 	# Still pywalfox uses 'The Default OutDir in pywal so just link them to the default'
 	if [ -d "$DEFAULT_PYWAL16_OUT_DIR" ]; then
 		for outFile in "$PYWAL16_OUT_DIR"/*; do
-			filename=$(basename "$outFile")
+			local filename=$(basename "$outFile")
 			if [ ! -e "$DEFAULT_PYWAL16_OUT_DIR/$filename" ]; then
 				ln -s "$outFile" "$DEFAULT_PYWAL16_OUT_DIR/" >/dev/null
 			fi
 		done
 	fi
 
-	# Apply gtk theme
+	# Apply gtk theme / reload gtk theme
 	verbose "Generating & setting gtk theme!"
 	[ "$wallpaperGTK" = true ] && bash "$(dirname $0)/theming/gtk/generate.sh" "@color$wallpaperGTKAC"
-	# reload gtk theme
-	#xsettingsd -c $HOME/.config/xsettingsd/xsettingsd.conf
+	# TODO: xsettingsd -c $HOME/.config/xsettingsd/xsettingsd.conf
+	# TODO: make a xsettigsd.conf when icon adaptation is finished!!
 }
 
 # Config labels
@@ -106,30 +109,29 @@ GTKCOLORS=() ; for clrno in {0..15}; do GTKCOLORS+=($clrno) ;done
 # GUI Configuration
 if [ "$CONFIG_MODE" = true ]; then	
 	verbose "Running kdialog for configuration..."
-	cancelCONFIG() { verbose "Configuration Gui was canceled!, it might cause some problems when loading the configuration!"; exit 0; }
 	ToCONFIG=$( kdialog --checklist "Available Configs" "${SETUPS[@]}" --separate-output )
 	[ -z "$ToCONFIG" ] && cancelCONFIG
     for config in $ToCONFIG; do
-        case "$config" in
-			wallGTK) 
-				unset WALL_GTK; WALL_GTK=true;\
-				GTK_ACCENT_COLOR=$(kdialog --yesno "Change current gtk accent color?" && \
-				kdialog --combobox "Gtk Accent Color:" "${GTKCOLORS[@]}" || echo "$wallpaperGTKAC" || cancelCONFIG )
-				;;
-            wallSELC)
-                WALL_SELECT=$(kdialog --yes-label "Select Wallpaper" --no-label "Random Wallpaper" \
-                    --yesno "Changing your pywal Wallpaper Method?" && echo "static" || echo "random")
-                ;;
-            wallBACK)
-                WALL_BACK=$(kdialog --radiolist "Pywal Backend In Use" "${BACKENDS[@]}" || cancelCONFIG )
-                ;;
-            wallTYPE)
-                WALL_TYPE=$(kdialog --combobox "Wallpaper Setup Type" "${TYPE[@]}" || cancelCONFIG )
-                ;;
-			wallCLR16)
-				WALL_CLR16=$(kdialog --yes-label "Darken" --no-label "Lighten" \
+      case "$config" in
+				wallGTK) 
+					unset WALL_GTK; WALL_GTK=true;\
+					GTK_ACCENT_COLOR=$(kdialog --yesno "Change current gtk accent color?" && \
+					kdialog --combobox "Gtk Accent Color:" "${GTKCOLORS[@]}" || echo "$wallpaperGTKAC" || cancelCONFIG )
+					;;
+        wallSELC)
+          WALL_SELECT=$(kdialog --yes-label "Select Wallpaper" --no-label "Random Wallpaper" \
+             --yesno "Changing your pywal Wallpaper Method?" && echo "static" || echo "random")
+          ;;
+        wallBACK)
+          WALL_BACK=$(kdialog --radiolist "Pywal Backend In Use" "${BACKENDS[@]}" || cancelCONFIG )
+          ;;
+        wallTYPE)
+          WALL_TYPE=$(kdialog --combobox "Wallpaper Setup Type" "${TYPE[@]}" || cancelCONFIG )
+          ;;
+				wallCLR16)
+					WALL_CLR16=$(kdialog --yes-label "Darken" --no-label "Lighten" \
 					--yesno "Generating 16 Colors must be either:" && echo "darken" || echo "lighten" )
-				;;
+					;;
         esac
     done
 
@@ -140,10 +142,10 @@ else
 	verbose "Using the previously configured settings"
 	GTK_ACCENT_COLOR="$wallpaperGTKAC"
 	WALL_GTK="$wallpaperGTK"
-    WALL_BACK="$wallpaperBACK"
-    WALL_SELECT="$wallpaperSELC"
-    WALL_TYPE="$wallpaperTYPE"
-    WALL_MODE="$wallpaperMODE"
+  WALL_BACK="$wallpaperBACK"
+  WALL_SELECT="$wallpaperSELC"
+  WALL_TYPE="$wallpaperTYPE"
+  WALL_MODE="$wallpaperMODE"
 	WALL_CLR16="$wallpaperCLR16"
 fi
 
@@ -171,11 +173,12 @@ case "$WALL_SELECT" in
 		;;
 esac
 
-# Save config
-verbose "Saving configurations"
-[ -z "$WALL_BACK" ] && WALL_BACK="wal"
-[ -z "$WALL_GTK_ACCENT_COLOR" ] && WALL_GTK_ACCENT_COLOR=2
-[ -z "$WALLPAPER" ] && [ -e "$WALLPAPER_FOLDER" ] && WALLPAPER="$WALLPAPER_FOLDER" 
+# Save config then read it
+saveCONFIG() {
+	verbose "Saving configurations"
+	[ -z "$WALL_BACK" ] && WALL_BACK="wal" &
+	[ -z "$WALL_GTK_ACCENT_COLOR" ] && WALL_GTK_ACCENT_COLOR=2 &
+	[ -z "$WALLPAPER" ] && [ -e "$WALLPAPER_FOLDER" ] && WALLPAPER="$WALLPAPER_FOLDER" &
 
 cat > "$WALLPAPER_CONF_PATH" <<EOF
 wallpaper_path=$WALLPAPER
@@ -189,23 +192,18 @@ gen_color16=$WALL_CLR16
 EOF
 
 assignTEMPCONF
+}
+
+# Only save the config when configured!
+[ "$CONFIG_MODE" = true ] && saveCONFIG
 
 # Select a random wallpaper from folder or use static
-if [ -d "$WALLPAPER_FOLDER" ] && [ -d "$wallpaperIMG" ]; then
-    wallpaperIMAGE=$(find "$wallpaperIMG" -type f | shuf -n 1)
-else
-    wallpaperIMAGE="$wallpaperIMG"
-fi
+[ -d "$WALLPAPER_FOLDER" ] && [ -d "$wallpaperIMG" ] && \
+  wallpaperIMAGE=$(find "$wallpaperIMG" -type f | shuf -n 1) || wallpaperIMAGE="$wallpaperIMG"
 
-if [ -z "$WALL_CLR16" ] || [ -z "$wallpaperCLR16" ] ; then
-	genCLR16op=""
-else
-	verbose "Enabling 16 colors in pywal..."
+[ -z "$WALL_CLR16" ] || [ -z "$wallpaperCLR16" ] && genCLR16op="" || verbose "Enabling 16 colors in pywal..." \
 	genCLR16op="--cols16 $wallpaperCLR16"
-fi
 
-# Set background
-wallsetERROR() { kdialog --error "Failed to set wallpaper..."; exit 1; }
 # Function to apply wallpaper using various setters and mapped modes
 set_wallpaper_with_mode() {
     local image_path="$1"
@@ -213,36 +211,36 @@ set_wallpaper_with_mode() {
     # Mode mappings
     case "$wallpaperMODE" in
         "fill")
-            xWallMode="zoom"; fehMode="fill"; nitrogenMode="auto"; swayMode="fill"
-            hsetrootMode="-fill"; xfceMode=5; gnomeMode="zoom"; pcmanfmMode="fit"
+            local xWallMode="zoom"; local fehMode="fill"; local nitrogenMode="auto"; local swayMode="fill"
+            local hsetrootMode="-fill"; local xfceMode=5; local gnomeMode="zoom"; local pcmanfmMode="fit"
             ;;
         "full")
-            xWallMode="maximize"; fehMode="max"; nitrogenMode="scaled"; swayMode="fit"
-            hsetrootMode="-full"; xfceMode=4; gnomeMode="scaled"; pcmanfmMode="stretch"
+            local xWallMode="maximize"; local fehMode="max"; local nitrogenMode="scaled"; local swayMode="fit"
+            local hsetrootMode="-full"; local xfceMode=4; local gnomeMode="scaled"; local pcmanfmMode="stretch"
             ;;
         "tile")
-            xWallMode="tile"; fehMode="tile"; nitrogenMode="tiled"; swayMode="tile"
-            hsetrootMode="-tile"; xfceMode=1; gnomeMode="wallpaper"; pcmanfmMode="tile"
+            local xWallMode="tile"; local fehMode="tile"; local nitrogenMode="tiled"; local swayMode="tile"
+            local hsetrootMode="-tile"; local xfceMode=1; local gnomeMode="wallpaper"; local pcmanfmMode="tile"
             ;;
         "center")
-            xWallMode="center"; fehMode="centered"; nitrogenMode="centered"; swayMode="center"
-            hsetrootMode="-center"; xfceMode=2; gnomeMode="centered"; pcmanfmMode="center"
+            local xWallMode="center"; local fehMode="centered"; local nitrogenMode="centered"; local swayMode="center"
+            local hsetrootMode="-center"; local xfceMode=2; local gnomeMode="centered"; local pcmanfmMode="center"
             ;;
         "cover")
-            xWallMode="stretch"; fehMode="scale"; nitrogenMode="zoom"; swayMode="stretch"
-            hsetrootMode="-full"; xfceMode=5; gnomeMode="zoom"; pcmanfmMode="stretch"
+            local xWallMode="stretch"; local fehMode="scale"; local nitrogenMode="zoom"; local swayMode="stretch"
+            local hsetrootMode="-full"; local xfceMode=5; local gnomeMode="zoom"; local pcmanfmMode="stretch"
             ;;
         *)
-            xWallMode="zoom"; fehMode="fill"; nitrogenMode="auto"; swayMode="fill"
-            hsetrootMode="-fill"; xfceMode=5; gnomeMode="zoom"; pcmanfmMode="fit"
+            local xWallMode="zoom"; local fehMode="fill"; local nitrogenMode="auto"; local swayMode="fill"
+            local hsetrootMode="-fill"; local xfceMode=5; local gnomeMode="zoom"; local pcmanfmMode="fit"
             ;;
     esac
 	
 	# Set wallpaper with mode according to the available wallpaper setter
-	WALL_SETTERS=( xwallpaper hsetroot feh nitrogen swaybg xfconf-query gnome-shell pcmanfm )
+	local WALL_SETTERS=( xwallpaper hsetroot feh nitrogen swaybg xfconf-query gnome-shell pcmanfm )
 	for wallSETTER in "${WALL_SETTERS[@]}"; do
 		if command -v $wallSETTER >/dev/null; then
-			CH_WALLSETTER="$wallSETTER"
+			local CH_WALLSETTER="$wallSETTER"
 			break
 		fi
 	done
@@ -270,31 +268,33 @@ set_wallpaper_with_mode() {
 wallpaper_CACHE="$PYWAL16_OUT_DIR/wallpaper.png" ; [ -f "$wallpaper_CACHE" ] && rm $wallpaper_CACHE
 case "$wallpaperIMAGE" in
 	*.png) cp $wallpaperIMAGE $wallpaper_CACHE ;;
-	*.gif) convert $wallpaperIMAGE -coalesce -flatten $wallpaper_CACHE ;;
-	*)     convert $wallpaperIMAGE $wallpaper_CACHE ;;
+	*.gif) convert $wallpaperIMAGE -coalesce -flatten $wallpaper_CACHE >/dev/null ;;
+	*)     convert $wallpaperIMAGE $wallpaper_CACHE >/dev/null ;;
 esac
 
-callTOAPPLYpywall() {
+
 # Apply wallpaper colors with pywal16
-applyWAL "$wallpaper_CACHE" "$wallpaperBACK" "$genCLR16op" || \
-	kdialog --msgbox "Backend is not found, using default instead!!" \
-	applyWAL "$wallpaper_CACHE" "wal" "$genCLR16op"	
+callTOAPPLYpywal() {
+	applyWAL "$wallpaper_CACHE" "$wallpaperBACK" "$genCLR16op" || \
+		kdialog --msgbox "Backend is not found, using default instead!!" ;\
+		applyWAL "$wallpaper_CACHE" "wal" "$genCLR16op"	
 }
 
-wallSETError() { kdialog --msgbox "No Wallpaper setter found!\nSo wallpaper is not set..."; }
-
+# set the wallpaperIMAGE in display
 setwallpaperTYPE() {
 	verbose "Settings wallpaper..."
 	case "$wallpaperTYPE" in
 		"Solid")
-			solidwallpaperCACHE=$PYWAL16_OUT_DIR/wallpaper.solid.png
+			local solidwallpaperCACHE=$PYWAL16_OUT_DIR/wallpaper.solid.png
 			[ -f "${PYWAL16_OUT_DIR}/colors.sh" ] && . "${PYWAL16_OUT_DIR}/colors.sh"
 			convert -size 80x80 xc:"$color8" "$solidwallpaperCACHE"
-			set_wallpaper_with_mode "$solidwallpaperCACHE" || wallSETError
+			set_wallpaper_with_mode "$solidwallpaperCACHE" || wallSETTERError
 			;;
-		"Image") set_wallpaper_with_mode "$wallpaper_CACHE" || wallSETError ;;
+		"Image") set_wallpaper_with_mode "$wallpaper_CACHE" || wallSETTERError ;;
 		*) kdialog --msgbox "Wallpaper type is not configured!\nSo wallpaper is not set...";; 
 	esac
 }
-callTOAPPLYpywall & setwallpaperTYPE
+
+# Finalize Process
+callTOAPPLYpywal & setwallpaperTYPE
 verbose "Process finished!!"
