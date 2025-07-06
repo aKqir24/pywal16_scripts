@@ -68,11 +68,30 @@ assignTEMPCONF
 # Function to apply wallpaper using pywal16
 applyWAL() {
 	verbose "Running 'pywal' for colorscheme... "
-	rm -r $DEFAULT_PYWAL16_OUT_DIR
 	wal --backend "$2" -i "$1" $3 -n --out-dir "$PYWAL16_OUT_DIR" >/dev/null || \
 		$(kdialog --msgbox "pywal ran into an error!\nplease run bash $0 --gui first" ; exit 1)
+	generateGTKTHEME
+}
 
-	# Still pywalfox uses 'The Default OutDir in pywal so just link them to the default'
+# Apply gtk theme / reload gtk theme
+generateGTKTHEME() {
+	verbose "Generating & setting gtk theme!"
+	[ "$wallpaperGTK" = true ] && bash "$(dirname $0)/theming/gtk/generate.sh" "@color$wallpaperGTKAC"
+	reloadGTK_ICONS
+}
+
+# Reload Gtk themes using xsettingsd
+reloadGTK_ICONS() {
+	local default_xsettings_config="$HOME/.xsettingsd.conf"
+	local xsettingsd_config="$HOME/.config/xsettingsd/xsettingsd.conf"
+	[ -f $xsettingsd_config ] || xsettingsd_config=$default_xsettings_config
+	sed -i 's|\(Net/ThemeName \)"[^"]*"|\1"pywal"|' $xsettingsd_config
+	command -v xsettingsd >/dev/null && pkill xsettingsd >/dev/null ;\
+		xsettingsd -c $xsettingsd_config >/dev/null 2>&1 &
+}
+
+# Still pywalfox uses 'The Default OutDir in pywal so just link them to the default'
+linkCONF_DIR() {	
 	if [ -d "$DEFAULT_PYWAL16_OUT_DIR" ]; then
 		for outFile in "$PYWAL16_OUT_DIR"/*; do
 			local filename=$(basename "$outFile")
@@ -81,12 +100,6 @@ applyWAL() {
 			fi
 		done
 	fi
-
-	# Apply gtk theme / reload gtk theme
-	verbose "Generating & setting gtk theme!"
-	[ "$wallpaperGTK" = true ] && bash "$(dirname $0)/theming/gtk/generate.sh" "@color$wallpaperGTKAC"
-	# TODO: xsettingsd -c $HOME/.config/xsettingsd/xsettingsd.conf
-	# TODO: make a xsettigsd.conf when icon adaptation is finished!!
 }
 
 # Config labels
@@ -272,7 +285,6 @@ case "$wallpaperIMAGE" in
 	*)     convert $wallpaperIMAGE $wallpaper_CACHE >/dev/null ;;
 esac
 
-
 # Apply wallpaper colors with pywal16
 callTOAPPLYpywal() {
 	applyWAL "$wallpaper_CACHE" "$wallpaperBACK" "$genCLR16op" || \
@@ -295,6 +307,6 @@ setwallpaperTYPE() {
 	esac
 }
 
-# Finalize Process
-callTOAPPLYpywal & setwallpaperTYPE
+# Finalize Process and making them faster by Functions
+setwallpaperTYPE & linkCONF_DIR & callTOAPPLYpywal
 verbose "Process finished!!"

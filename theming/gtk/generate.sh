@@ -51,7 +51,7 @@ USER_THEME_FOLDER="$HOME/.themes/pywal"
 
 [ -d $USER_THEME_FOLDER ] || mkdir -p $USER_THEME_FOLDER
 for themeFile in $(find $BASE_FOLDER -mindepth 1 -maxdepth 1); do
-	sleep 0.15 ; FULL_THEME_FILE_DIR="$USER_THEME_FOLDER/$(basename $themeFile)"
+	FULL_THEME_FILE_DIR="$USER_THEME_FOLDER/$(basename $themeFile)"
 	[ -e "$FULL_THEME_FILE_DIR" ] && rm -r "$FULL_THEME_FILE_DIR"
 	cp -r "$themeFile" "$USER_THEME_FOLDER/"
 done

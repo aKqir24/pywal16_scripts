@@ -1,25 +1,18 @@
 #!/bin/sh
 
 # Function to display error and quit
-die() {
-  printf "waloml: [ERROR] %s colorsceme cannot be set!!\n" "$1" >&2
-  exit 1
-}
+die() { printf "waloml: [ERROR] %s colorsceme cannot be set!!\n" "$1" >&2; exit 1 ;}
 
 # Function to echo while in process
-process() {
-  [ "$VERBOSE" = true ] && printf "waloml: %s colorsheme is applied!!\n" "$1"
-}
+process() { [ "$VERBOSE" = true ] && printf "waloml: %s colorsheme is applied!!\n" "$1"; }
 
 # Function to change toml string value
-write_toml() {
-  tomlq -i -t "$1" "$(echo $2 | sed "s|~|$HOME|g"")" >/dev/null || die "tomq cannot process the file $2"
-}
+write_toml() { tomlq -i -t "$1" "$(echo $2 | sed "s|~|$HOME|g")" >/dev/null || die "tomq cannot process the file $2"; }
 
 # Load pywal colors
-COLORS_SH="${PYWAL16_OUT_DIR}/colors.sh"
-[ -f "$COLORS_SH" ] && . "$COLORS_SH" || die "Wal colors not found, exiting script. Have you executed Wal before?"
+. "$PYWAL16_OUT_DIR/colors.sh"
 
+# Functions to write the toml config
 changeI3status_rustCONF() {
   write_toml "
 .theme.overrides.idle_bg = \"$color0\" |
@@ -93,14 +86,11 @@ changeAlacrittyCONF() {
 }
 
 HELP_TXT="Usage: bash $0 --alacritty=[CONFIG], --dunst=[CONFIG], --i3status-rs=[CONFIG]"
-
-[ -z "$1" ] && echo "$HELP_TXT"
-
 OPTS=$(getopt -o -v --long verbose,alacritty::,dunst::,i3status-rs:: -- "$@")
-eval set -- "$OPTS"
+eval set -- "$OPTS" ; [ -z $1 ] && echo "$HELP_TXT"
 
 while true; do
-  case $1 in
+  case "$1" in
     --verbose)
       VERBOSE=true; shift ;;
     --alacritty)
