@@ -77,11 +77,14 @@ applyWAL() {
 generateGTKTHEME() {
 	verbose "Generating & setting gtk theme!"
 	[ "$wallpaperGTK" = true ] && bash "$(dirname $0)/theming/gtk/generate.sh" "@color$wallpaperGTKAC"
-	reloadGTK_ICONS
+	reloadGTK_ICONS &
 }
+
+# TODO: Generate Icon Color theme
 
 # Reload Gtk themes using xsettingsd
 reloadGTK_ICONS() {
+	verbose "Reloading Gtk Theme..."
 	local default_xsettings_config="$HOME/.xsettingsd.conf"
 	local xsettingsd_config="$HOME/.config/xsettingsd/xsettingsd.conf"
 	[ -f $xsettingsd_config ] || xsettingsd_config=$default_xsettings_config
@@ -140,6 +143,8 @@ if [ "$CONFIG_MODE" = true ]; then
           ;;
         wallTYPE)
           WALL_TYPE=$(kdialog --combobox "Wallpaper Setup Type" "${TYPE[@]}" || cancelCONFIG )
+          [ "$WALL_TYPE" = "Image" ] && \
+          	WALL_MODE=$(kdialog --radiolist "Wallpaper Setup Mode" ${MODE[@]} || exit 0) || WALL_MODE=none
           ;;
 				wallCLR16)
 					WALL_CLR16=$(kdialog --yes-label "Darken" --no-label "Lighten" \
@@ -147,9 +152,6 @@ if [ "$CONFIG_MODE" = true ]; then
 					;;
         esac
     done
-
-    [ "$WALL_TYPE" = "Image" ] && \
-		WALL_MODE=$(kdialog --radiolist "Wallpaper Setup Mode" ${MODE[@]} || exit 0) || WALL_MODE=none
 
 else
 	verbose "Using the previously configured settings"
@@ -288,8 +290,8 @@ esac
 # Apply wallpaper colors with pywal16
 callTOAPPLYpywal() {
 	applyWAL "$wallpaper_CACHE" "$wallpaperBACK" "$genCLR16op" || \
-		kdialog --msgbox "Backend is not found, using default instead!!" ;\
-		applyWAL "$wallpaper_CACHE" "wal" "$genCLR16op"	
+		$( kdialog --msgbox "Backend is not found, using default instead!!" ; 
+			 applyWAL "$wallpaper_CACHE" "wal" "$genCLR16op" )
 }
 
 # set the wallpaperIMAGE in display

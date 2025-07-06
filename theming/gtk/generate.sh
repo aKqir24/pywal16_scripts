@@ -46,7 +46,7 @@ for gtkCSSFile in "${GTK_CSS_FILES[@]}"; do
     "$gtkCSSFile"
 done
 
-# Symlink The the base theme directory in .themes
+# Copy the base theme directory in .themes
 USER_THEME_FOLDER="$HOME/.themes/pywal"
 
 [ -d $USER_THEME_FOLDER ] || mkdir -p $USER_THEME_FOLDER
