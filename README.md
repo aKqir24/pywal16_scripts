@@ -49,12 +49,12 @@ A simple bash script that makes use of kdialog to configure `pywal16`, so that y
 ### waloml (pywal+toml)
 - _Change i3status-rs theme_
 ```bash
-  waloml.sh --i3status-rs [CONFIG_FILE]
+  waloml.sh --i3status-rs=[CONFIG_FILE]
   bash wal.sh
 ```
 - _Change Alacritty colors_
 ```bash
-  bash waloml.sh --alacritty [CONFIG_FILE]
+  bash waloml.sh --alacritty=[CONFIG_FILE]
 ```
 - _Change Dunst Colors_
 ```bash
@@ -71,7 +71,7 @@ If you happen to use .xinit with i3wm and with or not my [dotfiles](https://aKqi
 bash $HOME/pywal16_scripts/walsetup.sh # To load the configuration!!
 bash $HOME/pywal16_scripts/waloml.sh \
 	--alacritty --dunst \
-	--i3status-rs ~/.files/.config/i3/status/config.toml
+	--i3status-rs=~/.files/.config/i3/status/config.toml
 bash $HOME/pywal16_scripts/theming/rofi.sh ; pgrep -x dust && pkill dunst && dunst &
 source $PYWAL16_OUT_DIR/colors-tty.sh
 
@@ -84,8 +84,8 @@ exec i3
 Things that I might add:
 - [x] `walsetup` add verbose option...
 - [ ] `walsetup` custom bg-color&bgsetup setup
-- [ ] `walsetup` support in de's
+- [x] `walsetup` wallpaper setter support in some de's
 - [ ] `walsetup` Full icon pywal adptation support
 - [x] `waloml` improve adding options
 - [ ] `waloml` support for more terminals & appplications
-- [ ] `waloml` fix dumst color generation
+- [ ] `waloml` fix dunst color generation
