@@ -58,9 +58,8 @@ while true; do
 	case "$1" in
 		--gui) CONFIG_MODE=true; shift ;;
 		--verbose) VERBOSE=true; shift ;;
-		--help) echo "wallsetup: $HELP_MESSAGE"; shift;;
+		--help) echo "wallsetup: $HELP_MESSAGE"; exit 0; shift;;
 		--) shift; break ;;
-		*)  shift ;;
 	esac
 done
 
