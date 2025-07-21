@@ -94,13 +94,13 @@ while true; do
     --verbose)
       VERBOSE=true; shift ;;
     --alacritty)
-      changeAlacrittyCONF "${2:-$HOME/.config/alacritty.toml}"
+      changeAlacrittyCONF "${2:-$HOME/.config/alacritty.toml}" &
       shift 2 ;;
     --dunst)
-      changeDunstCONF "${2:-$HOME/.config/dunst/dunstrc}"
+      changeDunstCONF "${2:-$HOME/.config/dunst/dunstrc}" &
       shift 2 ;;
     --i3status-rs)
-      changeI3status_rustCONF "${2:-$HOME/.config/i3status-rs/config.toml}"
+      changeI3status_rustCONF "${2:-$HOME/.config/i3status-rs/config.toml}" &
       shift 2 ;;
     --)
       shift; break ;;

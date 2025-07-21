@@ -17,6 +17,7 @@ _**DEPENDENCIES**_
   - `feh`
   - `hsetroot`
   - `xwallpaper`
+  - `nitrogen`
 
 - Debian ( or Other Debian based distro )
 ```bash
@@ -69,10 +70,9 @@ If you happen to use .xinit with i3wm and with or not my [dotfiles](https://aKqi
 
 ```bash
 bash $HOME/pywal16_scripts/walsetup.sh # To load the configuration!!
-bash $HOME/pywal16_scripts/waloml.sh \
-	--alacritty --dunst \
+bash $HOME/pywal16_scripts/waloml.sh --alacritty --dunst \
 	--i3status-rs=~/.files/.config/i3/status/config.toml
-bash $HOME/pywal16_scripts/theming/rofi.sh ; pgrep -x dust && pkill dunst && dunst &
+bash $HOME/pywal16_scripts/theming/rofi.sh
 source $PYWAL16_OUT_DIR/colors-tty.sh
 
 exec i3
