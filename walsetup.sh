@@ -12,38 +12,7 @@ Usage: $0 [OPTIONS]
   --verbose: To show log messages when each step of the script is executed.
   --help: to show how to use this script.
   *: 'not putting any options' loads/applies the configurations.
-
-Advanced:
-If you don't want bloat in your system like me, sometimes, you can just 
-edit the config file in your '$HOME/.config/walsetup.conf'. I still working on
-how to make a '--config' option, but for now that's the only option.
-
-wallpaper_path=[ IMAGE_FILE | IMAGE_FOLDER ]
-  - It is the path either to an wallpaper file directory or folder
-    that this script uses. Note, when using a wallpaper folder you 
-	need to define th wallpaper_cycle also.
-
-wallpaper_cycle=[iterative, recursive]
-  - How a wallpaper is choosen in a wallpaper folder.
-
-type=[ None | Image | Solid ]
-  - Sets your wallpaper wit these options, none basically means don't
-    set my wallpaper.
-
-mode=[ center | fill | tile | full | cover ]
-  - How the wallpaper behaves when it is applied by the available setter
-
-backend=[ wal | colorz | haishoku | okthief | modern_colorthief | colorthief ]
-  - What backend pywal will use in generating a colorscheme.
-
-gtk_apply=[ true | false ]
-  - Generate a gtk theme then apply it.
-
-gtk_accent=[0-15]
-  - The primary color used in gtk_apply, eg: primary and active
-
-gen_color16=[ lighten | darken ]
-  - pywal16's new 16 colorsheme generation"
+"
 
 # Default Values
 VERBOSE=false
@@ -116,7 +85,7 @@ assignTEMPCONF
 
 # Function to apply wallpaper using pywal16
 applyWAL() {	
-	verbose "Running 'pywal' for colorscheme... "
+	verbose "Running 'pywal' for colorscheme... "	
 	wal --$4 --backend "$2" -i "$1" $3 -n --out-dir "$PYWAL16_OUT_DIR" >/dev/null || pywalerror 	
 	generateGTKTHEME
 }
@@ -273,17 +242,17 @@ saveCONFIG() {
 		-e 's|\('${conf_variables[7]}'=\)[^ ]*|\1'$WALL_CLR16'|' \
 		$WALLPAPER_CONF_PATH
 
-assignTEMPCONF
+    assignTEMPCONF
 }
 
 # Only save the config when configured!
-[ "$CONFIG_MODE" = true ] && saveCONFIG
+[ "$CONFIG_MODE" = true ] && saveCONFIG ;
 
 # Wallpaper selection method
 [ -d "$WALLPAPER_FOLDER" ] && [ -d "$wallpaperIMG" ] && \
 	wallpaperPATH=$WALLPAPER_FOLDER || wallpaperPATH="$wallpaperIMG"
 
-[ -z "$WALL_CLR16" ] || [ -z "$wallpaperCLR16" ] && genCLR16op="" || verbose "Enabling 16 colors in pywal..." \
+[ -z "$wallpaperCLR16" ] && genCLR16op="" || verbose "Enabling 16 colors in pywal..."; \
 	genCLR16op="--cols16 $wallpaperCLR16"
 
 # Function to apply wallpaper using various setters and mapped modes

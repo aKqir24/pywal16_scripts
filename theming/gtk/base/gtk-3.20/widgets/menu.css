@@ -13,12 +13,12 @@ menubar > menuitem,
     transition: all 0.1s cubic-bezier(0, 0, 0.2, 1), color 0;
     min-height: 8px;
     padding: 2px 8px;
-    color: @selected_fg_color;
+    color: @selected_bg_color;
 }
 menubar > menuitem:hover,
 .menubar > menuitem:hover {
     background-color: @selected_bg_color;
-    color: @selected_fg_color;
+    color: @alternate_fg_color;
 }
 menubar > menuitem:disabled,
 .menubar > menuitem:disabled {
@@ -47,7 +47,7 @@ menu menuitem,
 menu menuitem:hover,
 .menu menuitem:hover {
     background-color: @selected_bg_color;
-    color: @selected_fg_color;
+    color: @alternate_fg_color;
 }
 menu menuitem:disabled,
 .menu menuitem:disabled {

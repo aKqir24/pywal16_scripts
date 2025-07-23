@@ -9,7 +9,8 @@ toolbar {
 }
 
 toolbar button {
-    padding: 2px;
+    padding: 2px;	
+    background-color: transparent;
 }
 
 toolbar button.text-button {

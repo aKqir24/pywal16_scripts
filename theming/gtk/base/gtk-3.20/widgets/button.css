@@ -2,31 +2,70 @@
 /**********
  * button *
  **********/
-button {
-    padding: 5px;
-    border-width: 1px;
-    border-style: solid;
-    border-color: transparent;
-    border-radius: 0px;
-    background-color: @button_normal_color;
-    background-image: none;
-    color: @text_color;
+button{
+    min-height: 20px;
+    min-width: 16px;
+	padding: 2px 6px;
+	border: 1px;
+	border-radius: 0px;
+	transition: all 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+	font-weight: normal;
+	color: @text_color;
+	background-color: @button_normal_color;
+	text-shadow: none; 
 }
+
+button.flat {
+    border-color: transparent;
+    background-image: none;
+	transition: all 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    transition-duration: 500ms;
+    outline-color: rgba(254, 254, 254, 0.3);
+    text-shadow: none;
+}
+
+notebook > header > tabs > arrow.image-button,
+  button.image-button {
+    min-width: 24px;
+    padding-left: 4px;
+    padding-right: 4px; }
+  notebook > header > tabs > arrow.image-button.circular, 
+  notebook > header > tabs > arrow.image-button.sidebar-button,
+  button.image-button.circular,
+  button.image-button.sidebar-button {
+    padding: 6px 4px;
+    border-radius: 50px;
+    box-shadow: none; }
+  notebook > header > tabs > arrow.text-button,
+  button.text-button {
+    padding-left: 16px;
+    padding-right: 16px; }
+  notebook > header > tabs > arrow.text-button.image-button,
+  button.text-button.image-button {
+    padding-left: 8px;
+    padding-right: 8px;
+    border-radius: 2px; }
+    notebook > header > tabs > arrow.text-button.image-button label,
+    button.text-button.image-button label {
+      padding-left: 8px;
+      padding-right: 8px; 
+}
+
 
 button:focus {
     border: @selected_bg_color 2px dotted;
-    color: @fg_color;
+    color: @alternate_fg_color;
 }
 
 button:hover {
     background-color: shade(@selected_bg_color, 0.9);
-    color: @fg_color;
+    color: @alternate_fg_color;
 }
 
 button:active,
 button:active:hover,
 button.toggle:checked {
-    color: @fg_color;
+    color: @alternate_bg_color;
     background-color: shade(@selected_bg_color, 0.83);
 }
 

@@ -8,7 +8,6 @@ BASE_FOLDER="$WORK_DIR/base"
 
 GTK_CSS_FILES=(
   "$BASE_FOLDER/gtk-2.0/gtkrc"
-  "$BASE_FOLDER/gtk-3.0/gtk.css"
   "$BASE_FOLDER/gtk-3.20/gtk.css"
   "$BASE_FOLDER/general/dark.css"
 )

@@ -33,7 +33,7 @@ GtkMenuToolButton.menu {
 .menu.button {
     border-width: 0;
     border-radius: 0;
-    color: @theme_text_color;
+    color: @alternate_fg_color;
     background-color: transparent;
     background-image: none;
 }

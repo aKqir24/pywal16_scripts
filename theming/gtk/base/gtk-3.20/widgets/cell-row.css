@@ -9,7 +9,7 @@
 .cell:selected,
 .cell:selected:focus {
     background-color: @selected_bg_color;
-    color: @selected_fg_color;
+    color: @alternate_fg_color;
 }
 
 row:selected,
@@ -20,6 +20,6 @@ row:selected:focus {
     border-radius: 0;
     background-color: @selected_bg_color;
     background-image: none;
-    color: @selected_fg_color;
+    color: @selected_bg_color;
 
 }

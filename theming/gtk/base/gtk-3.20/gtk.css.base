@@ -20,9 +20,10 @@
 @define-color tooltip_bg_color mix(@color0, @color15, 0.04);
 @define-color base_color mix(@color0, @color15, 0);
 @define-color fg_color @color15;
-@define-color text_color @color15;
-@define-color selected_fg_color @color0;
-@define-color tooltip_fg_color @color15;
+@define-color text_color @fg_color;
+@define-color alternate_fg_color @color8;
+@define-color selected_fg_color @text_color;
+@define-color tooltip_fg_color @text_color;
 
 /* colormap actually used by the theme, to be overridden in other css files */
 @define-color theme_bg_color @bg_color;
