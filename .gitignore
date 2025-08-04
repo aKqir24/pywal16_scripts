@@ -1,3 +1,4 @@
-theming/gtk/base/gtk-3.20/gtk.css
-theming/gtk/base/gtk-3.0/gtk.css
-theming/gtk/base/gtk-3.20/gtk.css
+theming/gtk/base/gtk-3.20/gtk.css.base
+theming/gtk/base/gtk-3.0/gtk.css.base
+theming/gtk/base/gtk-3.20/gtk.css.base
+theming/gtk/base/general/dark.css.base
