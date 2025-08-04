@@ -85,16 +85,15 @@ assignTEMPCONF
 
 # Function to apply wallpaper using pywal16
 applyWAL() {	
-	verbose "Running 'pywal' for colorscheme... "	
-	wal --$4 --backend "$2" -i "$1" $3 -n --out-dir "$PYWAL16_OUT_DIR" >/dev/null || pywalerror 	
-	generateGTKTHEME
+	verbose "Running 'pywal' for colorscheme... " & generateGTKTHEME
+	wal --$4 --backend "$2" -i "$1" $3 -n --out-dir "$PYWAL16_OUT_DIR" >/dev/null || pywalerror 
+	reloadGTK_ICONS &
 }
 
 # Apply gtk theme / reload gtk theme
 generateGTKTHEME() {
-	verbose "Generating & setting gtk theme!"
+	verbose "Generating & setting gtk theme!" &
 	[ "$wallpaperGTK" = true ] && bash "$(dirname $0)/theming/gtk/generate.sh" "@color$wallpaperGTKAC"
-	reloadGTK_ICONS &
 }
 
 # TODO: Generate Icon Color theme

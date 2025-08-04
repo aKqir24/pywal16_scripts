@@ -43,6 +43,7 @@ changeDunstCONF() {
 .urgency_critical.background = \"$color0\" |
 .urgency_critical.foreground = \"$color15\" |
 .urgency_critical.frame_color = \"$color1\"" "$1"
+  pgrep -x dunst && pkill dunst ; dunst &>/dev/null 
   process "Dunst"
 }
 
