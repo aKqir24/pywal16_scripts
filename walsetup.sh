@@ -1,25 +1,9 @@
 #!/bin/bash
 
-# Manage Options
-HELP_MESSAGE="
-Info:
-'walsetup.sh' is a wrapper for pywal16 purely in shell script and made by aKqir24,
-to ease the configuration in pywal, also it adds more functionality in pywal16 which
-are writen in the https://github.com/aKqir24/pywal16_scripts.
-
-Usage: $0 [OPTIONS]
-  --gui: To launch a configuration dialogs and apply the configurations.
-  --verbose: To show log messages when each step of the script is executed.
-  --help: to show how to use this script.
-  *: 'not putting any options' loads/applies the configurations.
-"
-
-# Default Values
-VERBOSE=false
-CONFIG_MODE=false
-DEFAULT_PYWAL16_OUT_DIR=$HOME/.cache/wal
-WALLPAPER_CONF_PATH="$HOME/.config/walsetup.conf"
-wallpaper_CACHE="$PYWAL16_OUT_DIR/wallpaper.png"
+# Import all the scripts
+SCRIPT_PATH="$(pwd)/scripts"
+SCRIPT_FILES=(messages config startup wallpaper apply)
+for script in ${SCRIPT_FILES[@]}; do . "$SCRIPT_PATH/$script.sh"; done
 
 # Options To be used
 OPTS=$(getopt -o -v --long verbose,gui,help -- "$@") ; eval set -- "$OPTS"
@@ -32,6 +16,7 @@ while true; do
 	esac
 done
 
+<<<<<<< HEAD
 # Check for required dependencies
 command -v wal > /dev/null || echo "pywal16 is not installed, Please install it!"
 if [ "$CONFIG_MODE" = true ]; then
@@ -153,19 +138,19 @@ linkCONF_DIR() {
 	fi
 }
 
+=======
+>>>>>>> test
 # Config labels
-SETUPS=( wallSELC "Wallpaper Selection Method" on\
+SETUPS=(  wallSELC "Wallpaper Selection Method" on\
 		  wallBACK "Pywal Backend To Use" off\
 		  wallTYPE "Wallpaper Setup Type" on\
 		  wallGTK "Gtk Theme Adaptation" on\
 		  wallICONS "Icon Theme Adaptation" on \
-		  wallCLR16 "16 Color Output" on
-)
+		  wallCLR16 "16 Color Output" on )
 
 BACKENDS=( wal wal on colorz colorz off haishoku haishoku off \
 		   okthief okthief off modern_colorthief modern_colorthief off \
-		   schemer2 schemer2 off colorthief colorthief off
-)
+		   schemer2 schemer2 off colorthief colorthief off )
 
 TYPE=( "None" "Solid" "Image" )
 MODE=( center "Center" off fill "Fill" on tile "Tile" off full "Full" off cover "Scale" off )
@@ -231,8 +216,8 @@ case "$WALL_SELECT" in
 	"folder")
 		if [ "$CONFIG_MODE" = true ]; then
 			WALL_CHANGE_FOLDER=$(kdialog --yesno "Do you want to change the wallpaper folder?" && echo "YES")
-			WALL_CYCLE=$(kdialog --yes-label "Orderly" --no-label "Randomly" \
-			--yesno "How to choose you wallpaper in a folder?" && echo "iterative" || echo "recursive" )
+			WALL_CYCLE=$(kdialog --yes-label "Orderly" --no-label "Randomly" --yesno \
+				"How to choose you wallpaper in a folder?" && echo "iterative" || echo "recursive" )
 		fi
 		[ -d "$wallpaperIMG" ] && wallSTARTfolder=$wallpaperIMG || llSTARTfolder=$HOME 
 		if [ ! -d "$wallpaperIMG" ]; then
@@ -253,103 +238,12 @@ case "$WALL_SELECT" in
 		;;
 esac
 
-# Save config then read it
-saveCONFIG() {
-	verbose "Saving configurations"
-	[ -z "$WALL_BACK" ] && WALL_BACK="wal"
-	[ -z "$WALL_GTK_ACCENT_COLOR" ] && WALL_GTK_ACCENT_COLOR=2
-	[ -z "$WALLPAPER" ] && [ -d "$WALLPAPER_FOLDER" ] && WALLPAPER="$WALLPAPER_FOLDER"
-	
-	conf_variables=( wallpaper_path wallpaper_cycle type mode backend gtk_theme gtk_accent gen_color16 icon_theme icon_theme_mode )
-	for v in ${conf_variables[@]}; do
-		grep -q "^$v=" $WALLPAPER_CONF_PATH || echo "$v=" >> $WALLPAPER_CONF_PATH
-	done
-
-	sed -i \
-		-e 's|\('${conf_variables[0]}'=\)[^ ]*|\1'$WALLPAPER'|' \
-		-e 's|\('${conf_variables[1]}'=\)[^ ]*|\1'$WALL_CYCLE'|' \
-		-e 's|\('${conf_variables[2]}'=\)[^ ]*|\1'$WALL_TYPE'|' \
-		-e 's|\('${conf_variables[3]}'=\)[^ ]*|\1'$WALL_MODE'|' \
-		-e 's|\('${conf_variables[4]}'=\)[^ ]*|\1'$WALL_BACK'|' \
-		-e 's|\('${conf_variables[5]}'=\)[^ ]*|\1'$WALL_GTK'|' \
-		-e 's|\('${conf_variables[6]}'=\)[^ ]*|\1'$GTK_ACCENT_COLOR'|' \
-		-e 's|\('${conf_variables[7]}'=\)[^ ]*|\1'$WALL_CLR16'|' \
-		-e 's|\('${conf_variables[8]}'=\)[^ ]*|\1'$WALL_ICONS'|' \
-		-e 's|\('${conf_variables[9]}'=\)[^ ]*|\1'$WALL_ICONS_MODE'|' \
-		$WALLPAPER_CONF_PATH
-
-    assignTEMPCONF
-}
-
 # Only save the config when configured!
 [ "$CONFIG_MODE" = true ] && saveCONFIG ;
 
-# Wallpaper selection method
-[ -d "$WALLPAPER_FOLDER" ] && [ -d "$wallpaperIMG" ] && \
-	wallpaperPATH=$WALLPAPER_FOLDER || wallpaperPATH="$wallpaperIMG"
-
+# Check if --color16 option is enabled
 [ -z "$wallpaperCLR16" ] && genCLR16op="" || verbose "Enabling 16 colors in pywal..."; \
 	genCLR16op="--cols16 $wallpaperCLR16"
-
-# Function to apply wallpaper using various setters and mapped modes
-set_wallpaper_with_mode() {
-    local image_path="$1"
-
-    # Mode mappings
-    case "$wallpaperMODE" in
-        "fill")
-            local xWallMode="zoom"; local fehMode="fill"; local nitrogenMode="auto"; local swayMode="fill"
-            local hsetrootMode="-fill"; local xfceMode=5; local gnomeMode="zoom"; local pcmanfmMode="fit"
-            ;;
-        "full")
-            local xWallMode="maximize"; local fehMode="max"; local nitrogenMode="scaled"; local swayMode="fit"
-            local hsetrootMode="-full"; local xfceMode=4; local gnomeMode="scaled"; local pcmanfmMode="stretch"
-            ;;
-        "tile")
-            local xWallMode="tile"; local fehMode="tile"; local nitrogenMode="tiled"; local swayMode="tile"
-            local hsetrootMode="-tile"; local xfceMode=1; local gnomeMode="wallpaper"; local pcmanfmMode="tile"
-            ;;
-        "center")
-            local xWallMode="center"; local fehMode="centered"; local nitrogenMode="centered"; local swayMode="center"
-            local hsetrootMode="-center"; local xfceMode=2; local gnomeMode="centered"; local pcmanfmMode="center"
-            ;;
-        "cover")
-            local xWallMode="stretch"; local fehMode="scale"; local nitrogenMode="zoom"; local swayMode="stretch"
-            local hsetrootMode="-full"; local xfceMode=5; local gnomeMode="zoom"; local pcmanfmMode="stretch"
-            ;;
-        *)
-            local xWallMode="zoom"; local fehMode="fill"; local nitrogenMode="auto"; local swayMode="fill"
-            local hsetrootMode="-fill"; local xfceMode=5; local gnomeMode="zoom"; local pcmanfmMode="fit"
-            ;;
-    esac
-	
-	# Set wallpaper with mode according to the available wallpaper setter
-	local WALL_SETTERS=( xwallpaper hsetroot feh nitrogen swaybg xfconf-query gnome-shell pcmanfm )
-	for wallSETTER in "${WALL_SETTERS[@]}"; do
-		if command -v $wallSETTER >/dev/null; then
-			local CH_WALLSETTER="$wallSETTER"
-			break
-		fi
-	done
-    case "$CH_WALLSETTER" in 
-		"${WALL_SETTERS[0]}") xwallpaper "--$xWallMode" "$image_path" --daemon || wallsetERROR;;
-        "${WALL_SETTERS[1]}") hsetroot "$hsetrootMode" "$image_path" || wallsetERROR;;
-        "${WALL_SETTERS[2]}") feh --bg-"$fehMode" "$image_path" || wallsetERROR;;
-        "${WALL_SETTERS[3]}") nitrogen --set-$nitrogenMode "$image_path" || wallsetERROR;;
-        "${WALL_SETTERS[4]}") swaybg -i "$image_path" --mode "$swayMode" || wallsetERROR;;
-		"${WALL_SETTERS[5]}")
-			xfconf-query --channel xfce4-desktop --property /backdrop/screen0/monitor0/image-style --set $xfceMode &&
-			xfconf-query --channel xfce4-desktop --property /backdrop/screen0/monitor0/image-path --set "$image_path" || \
-			wallsetERROR 1
-		;;
-		"${WALL_SETTERS[6]}")
-			gsettings set org.gnome.desktop.background picture-uri "file://$image_path" &&
-			gsettings set org.gnome.desktop.background picture-options "$gnomeMode" || wallsetERROR
-		;;
-		"${WALL_SETTERS[7]}") pcmanfm --set-wallpaper "$image_path" --wallpaper-mode "$pcmanfmMode" || wallsetERROR ;;
-		*) kdialog --error "No supported wallpaper setter found!" return 1 ;;
-	esac
-}
 
 # call the pywal to get colorsheme
 applyWAL "$wallpaperPATH" "$wallpaperBACK" "$genCLR16op" "$wallpaperCYCLE" || \
@@ -364,18 +258,6 @@ case "$wallpaper" in
 	*.gif) convert $wallpaper -coalesce -flatten $wallpaper_CACHE >/dev/null ;;
 	*)     convert $wallpaper $wallpaper_CACHE >/dev/null ;;
 esac
-
-# set the wallpaperIMAGE in display
-setwallpaperTYPE() {
-	verbose "Settings wallpaper..."
-	case "$wallpaperTYPE" in
-		"Solid")
-			convert -size 10x10 xc:"$color8" "$wallpaper_CACHE"
-			set_wallpaper_with_mode "$wallpaper_CACHE" || wallSETTERError ;;
-		"Image") set_wallpaper_with_mode "$wallpaper_CACHE" || wallSETTERError ;;
-		*) kdialog --msgbox "Wallpaper type is not configured!\nSo wallpaper is not set...";; 
-	esac
-}
 
 # Finalize Process and making them faster by Functions
 linkCONF_DIR & setwallpaperTYPE && verbose "Process finished!!"	
