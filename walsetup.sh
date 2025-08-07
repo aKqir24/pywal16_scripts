@@ -2,9 +2,8 @@
 
 # Import all the scripts
 SCRIPT_PATH="$(pwd)/scripts"
-. "$SCRIPT_PATH/messages.sh" ; . "$SCRIPT_PATH/config.sh"
-. "$SCRIPT_PATH/startup.sh" ; . "$SCRIPT_PATH/wallpaper.sh"
-. "$SCRIPT_PATH/apply.sh"
+SCRIPT_FILES=(messages config startup wallpaper apply)
+for script in ${SCRIPT_FILES[@]}; do . "$SCRIPT_PATH/$script.sh"; done
 
 # Options To be used
 OPTS=$(getopt -o -v --long verbose,gui,help -- "$@") ; eval set -- "$OPTS"
