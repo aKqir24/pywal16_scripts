@@ -86,9 +86,10 @@ assignTEMPCONF() {
 assignTEMPCONF
 
 # Function to apply wallpaper using pywal16
-applyWAL() {	
+applyWAL() {
+	[ -z $4 ] && wallCYCLE="" || wallCYCLE="--$4"
 	verbose "Running 'pywal' for colorscheme... " & generateGTKTHEME & generateICONSTHEME
-	wal --$4 --backend "$2" -i "$1" $3 -n --out-dir "$PYWAL16_OUT_DIR" >/dev/null || pywalerror 
+	wal $wallCYCLE --backend "$2" -i "$1" $3 -n --out-dir "$PYWAL16_OUT_DIR" >/dev/null || pywalerror 
 	reloadTHEMES &
 }
 
