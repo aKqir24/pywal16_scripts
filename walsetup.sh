@@ -67,7 +67,6 @@ if [ "$CONFIG_MODE" = true ]; then
 		  ;;
         esac
     done
-# TODO: Also make a cli configuration options
 else
 	verbose "Using the previously configured settings"
 	GTK_ACCENT_COLOR="$wallpaperGTKAC"
