@@ -93,8 +93,8 @@ case "$WALL_SELECT" in
 	"folder")
 		if [ "$CONFIG_MODE" = true ]; then
 			WALL_CHANGE_FOLDER=$(kdialog --yesno "Do you want to change the wallpaper folder?" && echo "YES")
-			WALL_CYCLE=$(kdialog --yes-label "Orderly" --no-label "Randomly" \
-			--yesno "How to choose you wallpaper in a folder?" && echo "iterative" || echo "recursive" )
+			WALL_CYCLE=$(kdialog --yes-label "Orderly" --no-label "Randomly" --yesno \
+				"How to choose you wallpaper in a folder?" && echo "iterative" || echo "recursive" )
 		fi
 		[ -d "$wallpaperIMG" ] && wallSTARTfolder=$wallpaperIMG || llSTARTfolder=$HOME 
 		if [ ! -d "$wallpaperIMG" ]; then
@@ -123,9 +123,9 @@ esac
 	genCLR16op="--cols16 $wallpaperCLR16"
 
 # call the pywal to get colorsheme
-applyWAL "$wallpaperPATH" "$wallpaperBACK" "$genCLR16op" "--$wallpaperCYCLE" || \
+applyWAL "$wallpaperPATH" "$wallpaperBACK" "$genCLR16op" "$wallpaperCYCLE" || \
 	$( kdialog --msgbox "Backend is not found, using default instead!!" ; 
-		 applyWAL "$wallpaperPATH" "wal" "$genCLR16op" "--$wallpaperCYCLE" )
+		 applyWAL "$wallpaperPATH" "wal" "$genCLR16op" "$wallpaperCYCLE" )
 
 # Make a wallpaper cache to expand the features in setting the wallpaper
 [ -f "${PYWAL16_OUT_DIR}/colors.sh" ] && . "${PYWAL16_OUT_DIR}/colors.sh"

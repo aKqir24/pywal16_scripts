@@ -57,6 +57,5 @@ saveCONFIG() {
 		-e 's|\('${conf_variables[8]}'=\)[^ ]*|\1'$WALL_ICONS'|' \
 		-e 's|\('${conf_variables[9]}'=\)[^ ]*|\1'$WALL_ICONS_MODE'|' \
 		$WALLPAPER_CONF_PATH
-
     assignTEMPCONF
 }
