@@ -37,7 +37,7 @@ setGTK_THEME() {
 
 setICON_THEME() {
 	verbose "Reloading Icon Theme..."	
-	if grep -q "^Net/IconThemeName  " $1; then
+	if grep -q "^Net/IconThemeName " $1; then
 		sed -i 's|\(Net/IconThemeName \)"[^"]*"|\1"pywal"|' $1
 	else
 		echo 'Net/IconThemeName "pywal"' >> $1
