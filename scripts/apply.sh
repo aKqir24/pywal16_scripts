@@ -1,7 +1,7 @@
 # Function to apply wallpaper using pywal16
 applyWAL() {	
 	verbose "Running 'pywal' for colorscheme... " & generateGTKTHEME & generateICONSTHEME
-	wal --$4 --backend "$2" -i "$1" $3 -n --out-dir "$PYWAL16_OUT_DIR" >/dev/null || pywalerror 
+	wal $4 --backend "$2" -i "$1" $3 -n --out-dir "$PYWAL16_OUT_DIR" >/dev/null || pywalerror 
 	reloadGTK_ICONS &
 }
 

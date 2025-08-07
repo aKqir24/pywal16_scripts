@@ -2,9 +2,9 @@
 
 # Import all the scripts
 SCRIPT_PATH="$(pwd)/scripts"
-. "${SCRIPT_PATH}/startup.sh" & . "${SCRIPT_PATH}/messages.sh" ;
-. "${SCRIPT_PATH}/config.sh" & . "${SCRIPT_PATH}/wallpaper.sh" &
-. "${SCRIPT_PATH}/apply.sh"
+. "$SCRIPT_PATH/messages.sh" ; . "$SCRIPT_PATH/config.sh"
+. "$SCRIPT_PATH/startup.sh" ; . "$SCRIPT_PATH/wallpaper.sh"
+. "$SCRIPT_PATH/apply.sh"
 
 # Options To be used
 OPTS=$(getopt -o -v --long verbose,gui,help -- "$@") ; eval set -- "$OPTS"
@@ -123,9 +123,9 @@ esac
 	genCLR16op="--cols16 $wallpaperCLR16"
 
 # call the pywal to get colorsheme
-applyWAL "$wallpaperPATH" "$wallpaperBACK" "$genCLR16op" "$wallpaperCYCLE" || \
+applyWAL "$wallpaperPATH" "$wallpaperBACK" "$genCLR16op" "--$wallpaperCYCLE" || \
 	$( kdialog --msgbox "Backend is not found, using default instead!!" ; 
-		 applyWAL "$wallpaperPATH" "wal" "$genCLR16op" "$wallpaperCYCLE" )
+		 applyWAL "$wallpaperPATH" "wal" "$genCLR16op" "--$wallpaperCYCLE" )
 
 # Make a wallpaper cache to expand the features in setting the wallpaper
 [ -f "${PYWAL16_OUT_DIR}/colors.sh" ] && . "${PYWAL16_OUT_DIR}/colors.sh"

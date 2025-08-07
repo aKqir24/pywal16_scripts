@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Default Config Values
 VERBOSE=false
 CONFIG_MODE=false
