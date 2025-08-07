@@ -17,6 +17,7 @@ while true; do
 done
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 # Check for required dependencies
 command -v wal > /dev/null || echo "pywal16 is not installed, Please install it!"
 if [ "$CONFIG_MODE" = true ]; then
@@ -141,6 +142,9 @@ linkCONF_DIR() {
 =======
 >>>>>>> test
 # Config labels
+=======
+# Config option labels
+>>>>>>> test
 SETUPS=(  wallSELC "Wallpaper Selection Method" on\
 		  wallBACK "Pywal Backend To Use" off\
 		  wallTYPE "Wallpaper Setup Type" on\
