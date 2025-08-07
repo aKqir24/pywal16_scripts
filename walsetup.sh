@@ -71,7 +71,9 @@ assignTEMPCONF() {
         case "$key" in
 			gtk_accent) wallpaperGTKAC=$val ;;
             gen_color16) wallpaperCLR16=$val ;;
-            gtk_apply) wallpaperGTK=$val ;;
+            gtk_theme) wallpaperGTK=$val ;;
+			icon_theme_mode) wallpaperICONSCLR=$val ;;
+			icon_theme) wallpaperICONS=$val ;;
             wallpaper_path) wallpaperIMG=$val ;;
 			wallpaper_cycle) wallpaperCYCLE=$val ;;
             type) wallpaperTYPE=$val ;;
@@ -85,7 +87,7 @@ assignTEMPCONF
 
 # Function to apply wallpaper using pywal16
 applyWAL() {	
-	verbose "Running 'pywal' for colorscheme... " & generateGTKTHEME
+	verbose "Running 'pywal' for colorscheme... " & generateGTKTHEME & generateICONSTHEME
 	wal --$4 --backend "$2" -i "$1" $3 -n --out-dir "$PYWAL16_OUT_DIR" >/dev/null || pywalerror 
 	reloadGTK_ICONS &
 }
@@ -93,22 +95,47 @@ applyWAL() {
 # Apply gtk theme / reload gtk theme
 generateGTKTHEME() {
 	verbose "Generating & setting gtk theme!" &
-	[ "$wallpaperGTK" = true ] && bash "$(dirname $0)/theming/gtk/generate.sh" "@color$wallpaperGTKAC"
+	if [ "$wallpaperGTK" = true ]; then
+		bash "$(dirname $0)/theming/gtk/generate.sh" "@color$wallpaperGTKAC"
+	else
+		rm -r "$HOME/.themes/pywal"
+	fi
 }
 
-# TODO: Generate Icon Color theme
+generateICONSTHEME() {
+	verbose "Generating & setting icon theme!" &
+	if [ "$wallpaperICONS" = true ] then 
+		bash "$(dirname $0)/theming/icons/generate.sh" "$wallpaperICONSCLR"
+	else
+		rm -r "$HOME/.icons/pywal"
+	fi	
+}
+
+# Set Icon Theme's Name
+setGTK_THEME() {
+	verbose "Reloading Gtk Theme..."	
+	if grep -q "^Net/ThemeName " $1; then
+		sed -i 's|\(Net/ThemeName \)"[^"]*"|\1"pywal"|' $1
+	else
+		echo 'Net/ThemeName "pywal"' >> $1
+	fi
+}
+
+setICON_THEME() {
+	verbose "Reloading Icon Theme..."	
+	if grep -q "^Net/IconThemeName  " $1; then
+		sed -i 's|\(Net/IconThemeName \)"[^"]*"|\1"pywal"|' $1
+	else
+		echo 'Net/IconThemeName "pywal"' >> $1
+	fi
+}
 
 # Reload Gtk themes using xsettingsd
-reloadGTK_ICONS() {
-	verbose "Reloading Gtk Theme..."
+reloadTHEMES() {
 	local default_xsettings_config="$HOME/.xsettingsd.conf"
 	local xsettingsd_config="$HOME/.config/xsettingsd/xsettingsd.conf"
 	[ -f $xsettingsd_config ] || xsettingsd_config=$default_xsettings_config
-	if grep -q "^Net/ThemeName " $xsettingsd_config; then
-		sed -i 's|\(Net/ThemeName \)"[^"]*"|\1"pywal"|' $xsettingsd_config
-	else
-		echo 'Net/ThemeName "pywal"' >> $xsettingsd_config
-	fi
+	setGTK_THEME $xsettingsd_config & setICON_THEME $xsettingsd_config 
 	command -v xsettingsd >/dev/null && pkill xsettingsd >/dev/null 2>&1 ;\
 		xsettingsd -c $xsettingsd_config >/dev/null 2>&1 &
 }
@@ -130,6 +157,7 @@ SETUPS=( wallSELC "Wallpaper Selection Method" on\
 		  wallBACK "Pywal Backend To Use" off\
 		  wallTYPE "Wallpaper Setup Type" on\
 		  wallGTK "Gtk Theme Adaptation" on\
+		  wallICONS "Icon Theme Adaptation" on \
 		  wallCLR16 "16 Color Output" on
 )
 
@@ -149,6 +177,10 @@ if [ "$CONFIG_MODE" = true ]; then
 	[ -z "$ToCONFIG" ] && cancelCONFIG
     for config in $ToCONFIG; do
       case "$config" in
+		wallICONS) unset WALL_ICONS ; WALL_ICONS=true \
+			WALL_ICONS_MODE=$(kdialog --yes-label "light" --no-label "dark" \
+			--yesno "Select an icon mode, it can be either:" && echo "dark" || echo "light")
+		;;
 		wallGTK) 
 		  unset WALL_GTK; WALL_GTK=true\
 		  GTK_ACCENT_COLOR=$(kdialog --yesno "Change current gtk accent color?" && \
@@ -177,6 +209,8 @@ if [ "$CONFIG_MODE" = true ]; then
 else
 	verbose "Using the previously configured settings"
 	GTK_ACCENT_COLOR="$wallpaperGTKAC"
+	WALL_ICONS_MODE="$wallpaperICONSCLR"
+	WALL_ICONS="$wallpaperICONS"
 	WALL_GTK="$wallpaperGTK"
 	WALL_BACK="$wallpaperBACK"
 	WALL_TYPE="$wallpaperTYPE"
@@ -225,7 +259,7 @@ saveCONFIG() {
 	[ -z "$WALL_GTK_ACCENT_COLOR" ] && WALL_GTK_ACCENT_COLOR=2
 	[ -z "$WALLPAPER" ] && [ -d "$WALLPAPER_FOLDER" ] && WALLPAPER="$WALLPAPER_FOLDER"
 	
-	conf_variables=( wallpaper_path wallpaper_cycle type mode backend gtk_apply gtk_accent gen_color16 )
+	conf_variables=( wallpaper_path wallpaper_cycle type mode backend gtk_theme gtk_accent gen_color16 icon_theme icon_theme_mode )
 	for v in ${conf_variables[@]}; do
 		grep -q "^$v=" $WALLPAPER_CONF_PATH || echo "$v=" >> $WALLPAPER_CONF_PATH
 	done
@@ -239,6 +273,8 @@ saveCONFIG() {
 		-e 's|\('${conf_variables[5]}'=\)[^ ]*|\1'$WALL_GTK'|' \
 		-e 's|\('${conf_variables[6]}'=\)[^ ]*|\1'$GTK_ACCENT_COLOR'|' \
 		-e 's|\('${conf_variables[7]}'=\)[^ ]*|\1'$WALL_CLR16'|' \
+		-e 's|\('${conf_variables[8]}'=\)[^ ]*|\1'$WALL_ICONS'|' \
+		-e 's|\('${conf_variables[9]}'=\)[^ ]*|\1'$WALL_ICONS_MODE'|' \
 		$WALLPAPER_CONF_PATH
 
     assignTEMPCONF
