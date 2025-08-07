@@ -16,7 +16,7 @@ while true; do
 	esac
 done
 
-# Config labels
+# Config option labels
 SETUPS=(  wallSELC "Wallpaper Selection Method" on\
 		  wallBACK "Pywal Backend To Use" off\
 		  wallTYPE "Wallpaper Setup Type" on\
