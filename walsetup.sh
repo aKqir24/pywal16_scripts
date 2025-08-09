@@ -23,8 +23,8 @@ SETUPS=(  wallBACK "Backend In Use" off \
 		  wallICONS "Install Icon Theme" off \
 		  wallCLR16 "Generate Light Colors" on )
 
-BACKENDS=( wal colorz haishoku okthief \ 
-	       modern_colorthief schemer2 colorthief )
+BACKENDS=(	"wal" "colorz" "haishoku" "okthief" \
+			"modern_colorthief" "schemer2" "colorthief" )
 
 TYPE=( none "None" off solid "Solid" off image "Image" on )
 MODE=( center "Center" off fill "Fill" on tile "Tile" off full "Full" off cover "Scale" off )
@@ -44,7 +44,8 @@ if [ "$CONFIG_MODE" = true ]; then
 	}
     for config in $ToCONFIG; do
 		if [ $config = wallGTK -o $config = wallICONS ]; then
-			theming_values >/dev/null ; unset -f theming_values 	
+			theming_values >/dev/null ; unset -f theming_values
+			theming_values() { echo "" ; }	
 		fi
 		case "$config" in
 			wallICONS) unset THEMING_ICONS ; THEMING_ICONS=true ;;
