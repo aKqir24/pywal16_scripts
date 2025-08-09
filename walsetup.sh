@@ -19,13 +19,12 @@ done
 # Config option labels
 SETUPS=(  wallBACK "Backend In Use" off \
 		  wallTYPE "Setting Wallpaper" on \
-		  wallGTK "Install Gtk Theme" on\
-		  wallICONS "Install Icon Theme" on \
+		  wallGTK "Install Gtk Theme" off \
+		  wallICONS "Install Icon Theme" off \
 		  wallCLR16 "Generate Light Colors" on )
 
-BACKENDS=( wal wal on colorz colorz off haishoku haishoku off \
-		   okthief okthief off modern_colorthief modern_colorthief off \
-		   schemer2 schemer2 off colorthief colorthief off )
+BACKENDS=( wal colorz haishoku okthief \ 
+	       modern_colorthief schemer2 colorthief )
 
 TYPE=( none "None" off solid "Solid" off image "Image" on )
 MODE=( center "Center" off fill "Fill" on tile "Tile" off full "Full" off cover "Scale" off )
@@ -50,7 +49,7 @@ if [ "$CONFIG_MODE" = true ]; then
 		case "$config" in
 			wallICONS) unset THEMING_ICONS ; THEMING_ICONS=true ;;
 			wallGTK) unset THEMING_GTK ; THEMING_GTK=true ;;
-			wallBACK) PYWAL_BACKEND=$(kdialog --radiolist "Pywal Backend In Use" "${BACKENDS[@]}" || cancelCONFIG ) ;;
+			wallBACK) PYWAL_BACKEND=$(kdialog --combobox "Pywal Backend In Use" "${BACKENDS[@]}" || cancelCONFIG ) ;;
 			wallTYPE)
 				WALLPAPER_TYPE=$(kdialog --radiolist "Wallpaper Setup Type" "${TYPE[@]}" || cancelCONFIG)
 				WALLPAPER_MODE=$(kdialog --radiolist "Wallpaper Setup Mode" "${MODE[@]}" || exit 0) ;;
