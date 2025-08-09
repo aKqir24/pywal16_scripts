@@ -1,27 +1,33 @@
 # Function to apply wallpaper using pywal16
 applyWAL() {
-	[ -z "$4" ] && wallCYCLE="" || wallCYCLE="--$4"
+	[ "$4" = "static" ] && wallCYCLE="" || wallCYCLE="--$4"
+	[ $theming_mode = "light" ] && colorscheme="-l" || colorscheme=""
 	verbose "Running 'pywal' for colorscheme... " & generateGTKTHEME & generateICONSTHEME
-	wal $wallCYCLE --backend "$2" -i "$1" $3 -n --out-dir "$PYWAL16_OUT_DIR" >/dev/null || pywalerror 
+	wal $wallCYCLE $colorscheme --backend "$2" -i "$1" $3 -n --out-dir "$PYWAL16_OUT_DIR" >/dev/null || pywalerror 
 	reloadTHEMES &
 }
+
+# To  clean the theme folder when option = false
+clean_theme_folder() { [ -e $"$1" ] && rm -r $1 ; }
 
 # Apply gtk theme / reload gtk theme
 generateGTKTHEME() {
 	verbose "Generating & setting gtk theme!" &
-	if [ "$wallpaperGTK" = true ]; then
-		bash "$(dirname $0)/theming/gtk/generate.sh" "@color$wallpaperGTKAC"
+	theme_folder="$HOME/.themes/pywal"
+	if [ $theming_gtk = true ]; then
+		bash "$(dirname $0)/theming/gtk/generate.sh" "@$theming_accent"
 	else
-		rm -r "$HOME/.themes/pywal"
+		clean_theme_folder $theme_folder & 
 	fi
 }
 
 generateICONSTHEME() {
 	verbose "Generating & setting icon theme!" &
-	if [ "$wallpaperICONS" = true ]; then 
-		bash "$(dirname $0)/theming/icons/generate.sh" "$wallpaperICONSCLR"
+	icons_folder="$HOME/.icons/pywal"
+	if [ $theming_icons = true ]; then 
+		bash "$(dirname $0)/theming/icons/generate.sh" "$theming_mode"
 	else
-		rm -r "$HOME/.icons/pywal"
+		clean_theme_folder $icons_folder &
 	fi	
 }
 
@@ -29,7 +35,7 @@ generateICONSTHEME() {
 setGTK_THEME() {
 	verbose "Reloading Gtk Theme..."	
 	if grep -q "^Net/ThemeName " $1; then
-		sed -i 's|\(Net/ThemeName \)"[^"]*"|\1"pywal"|' $1
+		sed -i 's|\(Net/ThemeName \)"[^"]*"|\1"pywal"|' "$1"
 	else
 		echo 'Net/ThemeName "pywal"' >> $1
 	fi
@@ -38,7 +44,7 @@ setGTK_THEME() {
 setICON_THEME() {
 	verbose "Reloading Icon Theme..."	
 	if grep -q "^Net/IconThemeName " $1; then
-		sed -i 's|\(Net/IconThemeName \)"[^"]*"|\1"pywal"|' $1
+		sed -i 's|\(Net/IconThemeName \)"[^"]*"|\1"pywal"|' "$1"
 	else
 		echo 'Net/IconThemeName "pywal"' >> $1
 	fi
@@ -49,7 +55,7 @@ reloadTHEMES() {
 	local default_xsettings_config="$HOME/.xsettingsd.conf"
 	local xsettingsd_config="$HOME/.config/xsettingsd/xsettingsd.conf"
 	[ -f $xsettingsd_config ] || xsettingsd_config=$default_xsettings_config
-	setGTK_THEME $xsettingsd_config & setICON_THEME $xsettingsd_config 
+	setGTK_THEME "$xsettingsd_config" & setICON_THEME "$xsettingsd_config" 
 	command -v xsettingsd >/dev/null && pkill xsettingsd >/dev/null 2>&1 ;\
 		xsettingsd -c $xsettingsd_config >/dev/null 2>&1 &
 }
