@@ -1,61 +1,54 @@
 #!/bin/bash
 
 # Default Config Values
-VERBOSE=false
-CONFIG_MODE=false
+VERBOSE=false CONFIG_MODE=false
 DEFAULT_PYWAL16_OUT_DIR=$HOME/.cache/wal
-WALLPAPER_CONF_PATH="$HOME/.config/walsetup.conf"
-wallpaper_CACHE="$PYWAL16_OUT_DIR/wallpaper.png"
+WALLPAPER_CONF_PATH="$HOME/.config/walsetup.toml"
+WALLPAPER_CACHE="$PYWAL16_OUT_DIR/wallpaper.png"
 
 # Write config file
 verbose "Writting & verifying config file"
 [ -e "$WALLPAPER_CONF_PATH" ] || touch "$WALLPAPER_CONF_PATH"
 [ -d "$PYWAL16_OUT_DIR" ] || mkdir -p "$PYWAL16_OUT_DIR"
 
-# Read/Write config
-verbose "Reading config file"
+# Read the config
+#verbose "Reading config file"
 assignTEMPCONF() {
-    while IFS='=' read -r key val; do
-        case "$key" in
-			gtk_accent) wallpaperGTKAC=$val ;;
-            gen_color16) wallpaperCLR16=$val ;;
-            gtk_theme) wallpaperGTK=$val ;;
-			icon_theme_mode) wallpaperICONSCLR=$val ;;
-			icon_theme) wallpaperICONS=$val ;;
-            wallpaper_path) wallpaperIMG=$val ;;
-			wallpaper_cycle) wallpaperCYCLE=$val ;;
-            type) wallpaperTYPE=$val ;;
-            mode) wallpaperMODE=$val ;;
-            backend) wallpaperBACK=$val ;;
-        esac
-    done < "$WALLPAPER_CONF_PATH"
+	tables=('wallpaper' 'theming' 'pywal6')
+	reader() { tomlq -r ".$1" $WALLPAPER_CONF_PATH ;}
+	for section in ${tables[@]}; do
+		case $section in
+			${tables[0]}) keys=( "cycle" "type" "path" "setup" ) ;;
+			${tables[1]}) keys=( "gtk" "icons" "mode" "accent" ) ;;
+			${tables[2]}) keys=( "backend" "light" "colorscheme" )
+		esac
+		for key in ${keys[@]}; do
+			value="$(reader $section.$key)"
+			declare -g "${section}_$key=$value"
+		done
+	done
 }
-
-assignTEMPCONF
 
 # Save config then read it
 saveCONFIG() {
 	verbose "Saving configurations"
-	[ -z "$WALL_BACK" ] && WALL_BACK="wal"
-	[ -z "$WALL_GTK_ACCENT_COLOR" ] && WALL_GTK_ACCENT_COLOR=2
-	[ -z "$WALLPAPER" ] && [ -d "$WALLPAPER_FOLDER" ] && WALLPAPER="$WALLPAPER_FOLDER"
-	
-	conf_variables=( wallpaper_path wallpaper_cycle type mode backend gtk_theme gtk_accent gen_color16 icon_theme icon_theme_mode )
-	for v in ${conf_variables[@]}; do
-		grep -q "^$v=" $WALLPAPER_CONF_PATH || echo "$v=" >> $WALLPAPER_CONF_PATH
-	done
+	[ -z "$PYWAL_BACKEND" ] && PYWAL_BACKEND="wal"
+	[ -z "$WALLPAPER_CYCLE" ] && WALLPAPER_CYCLE="static"
+	[ -z "$THEME_MODE" ] && THEME_MODE="dark"
+	[ -z "$THEME_ACCENT" ] && THEME_ACCENT_COLOR="color2" || \
+		THEME_ACCENT_COLOR="color$THEME_ACCENT"
 
-	sed -i \
-		-e 's|\('${conf_variables[0]}'=\)[^ ]*|\1'$WALLPAPER'|' \
-		-e 's|\('${conf_variables[1]}'=\)[^ ]*|\1'$WALL_CYCLE'|' \
-		-e 's|\('${conf_variables[2]}'=\)[^ ]*|\1'$WALL_TYPE'|' \
-		-e 's|\('${conf_variables[3]}'=\)[^ ]*|\1'$WALL_MODE'|' \
-		-e 's|\('${conf_variables[4]}'=\)[^ ]*|\1'$WALL_BACK'|' \
-		-e 's|\('${conf_variables[5]}'=\)[^ ]*|\1'$WALL_GTK'|' \
-		-e 's|\('${conf_variables[6]}'=\)[^ ]*|\1'$GTK_ACCENT_COLOR'|' \
-		-e 's|\('${conf_variables[7]}'=\)[^ ]*|\1'$WALL_CLR16'|' \
-		-e 's|\('${conf_variables[8]}'=\)[^ ]*|\1'$WALL_ICONS'|' \
-		-e 's|\('${conf_variables[9]}'=\)[^ ]*|\1'$WALL_ICONS_MODE'|' \
-		$WALLPAPER_CONF_PATH
-    assignTEMPCONF
+	tomlq -i -t "
+		.wallpaper.cycle = \"$WALLPAPER_CYCLE\" |
+		.wallpaper.type = \"$WALLPAPER_TYPE\" |
+		.wallpaper.path = \"$WALLPAPER_PATH\" |
+		.wallpaper.mode = \"$WALLPAPER_MODE\" |
+		.theming.gtk = $THEMING_GTK |
+		.theming.icons = $THEMING_ICONS |
+		.theming.mode = \"$THEME_MODE\" |
+		.theming.accent = \"$THEME_ACCENT_COLOR\" |
+		.pywal16.backend = \"$PYWAL_BACKEND\" |
+		.pywal16.light = \"$PYWAL_LIGHT\" |
+		.pywal16.colorscheme = \"$PYWAL_COLORSCHEME\"" \
+			"$WALLPAPER_CONF_PATH"
 }

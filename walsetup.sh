@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Import all the scripts
-SCRIPT_PATH="$(pwd)/scripts"
+SCRIPT_PATH="`dirname $0`/scripts"
 SCRIPT_FILES=(messages config startup wallpaper apply)
 for script in ${SCRIPT_FILES[@]}; do . "$SCRIPT_PATH/$script.sh"; done
 
@@ -138,122 +138,74 @@ linkCONF_DIR() {
 }
 
 # Config option labels
-SETUPS=(  wallSELC "Wallpaper Selection Method" on\
-		  wallBACK "Pywal Backend To Use" off\
-		  wallTYPE "Wallpaper Setup Type" on\
-		  wallGTK "Gtk Theme Adaptation" on\
-		  wallICONS "Icon Theme Adaptation" on \
-		  wallCLR16 "16 Color Output" on )
+SETUPS=(  wallBACK "Backend In Use" off \
+		  wallTYPE "Setting Wallpaper" on \
+		  wallGTK "Install Gtk Theme" off \
+		  wallICONS "Install Icon Theme" off \
+		  wallCLR16 "Generate Light Colors" on )
 
-BACKENDS=( wal wal on colorz colorz off haishoku haishoku off \
-		   okthief okthief off modern_colorthief modern_colorthief off \
-		   schemer2 schemer2 off colorthief colorthief off )
+BACKENDS=(	"wal" "colorz" "haishoku" "okthief" \
+			"modern_colorthief" "schemer2" "colorthief" )
 
-TYPE=( "None" "Solid" "Image" )
+TYPE=( none "None" off solid "Solid" off image "Image" on )
 MODE=( center "Center" off fill "Fill" on tile "Tile" off full "Full" off cover "Scale" off )
-GTKCOLORS=() ; for clrno in {0..15}; do GTKCOLORS+=($clrno) ;done
+GTKCOLORS=() ; for color_no in {0..15}; do GTKCOLORS+=($color_no) ;done
 
-# GUI Configuration
+# GUI dialog Configuration
 if [ "$CONFIG_MODE" = true ]; then	
 	verbose "Running kdialog for configuration..."
 	ToCONFIG=$( kdialog --checklist "Available Configs" "${SETUPS[@]}" --separate-output )
-	[ -z "$ToCONFIG" ] && cancelCONFIG
+	assignTEMPCONF >/dev/null ; select_wallpaper ; [ -z "$ToCONFIG" ] && cancelCONFIG
+	theming_values() {
+		THEME_MODE=$( kdialog --yes-label "Light" --no-label "Dark" \
+					  --yesno "Select an theme mode, it can be either:" && echo "light" || echo "dark")
+		THEME_ACCENT=$( kdialog --yesno "Change current gtk accent color?" && \
+						kdialog --combobox "Gtk Accent Color:" "${GTKCOLORS[@]}" || \
+						echo "$theming_accent" || cancelCONFIG )
+	}
     for config in $ToCONFIG; do
-      case "$config" in
-		wallICONS) unset WALL_ICONS ; WALL_ICONS=true \
-			WALL_ICONS_MODE=$(kdialog --yes-label "light" --no-label "dark" \
-			--yesno "Select an icon mode, it can be either:" && echo "dark" || echo "light")
-		;;
-		wallGTK) 
-		  unset WALL_GTK; WALL_GTK=true\
-		  GTK_ACCENT_COLOR=$(kdialog --yesno "Change current gtk accent color?" && \
-			kdialog --combobox "Gtk Accent Color:" "${GTKCOLORS[@]}" || \
-			[ -z "$wallpaperGTKAC" ] && echo 2 || echo "$wallpaperGTKAC" || cancelCONFIG )
-		  ;;
-        wallSELC)
-          WALL_SELECT=$(kdialog --yes-label "From Image" --no-label "From Folder" \
-             --yesno "Changing your pywal Wallpaper Method?" && echo "image" || echo "folder")
-          ;;
-        wallBACK)
-          WALL_BACK=$(kdialog --radiolist "Pywal Backend In Use" "${BACKENDS[@]}" || cancelCONFIG )
-          ;;
-        wallTYPE)
-          WALL_TYPE=$(kdialog --combobox "Wallpaper Setup Type" "${TYPE[@]}" || cancelCONFIG )
-          [ "$WALL_TYPE" = "Image" ] && \
-          	WALL_MODE=$(kdialog --radiolist "Wallpaper Setup Mode" ${MODE[@]} || exit 0) || WALL_MODE=none
-          ;;
-		wallCLR16)
-			WALL_CLR16=$(kdialog --yes-label "Darken" --no-label "Lighten" \
-			--yesno "Generating 16 Colors must be either:" && echo "darken" || echo "lighten" )
-		  ;;
+		if [ $config = wallGTK -o $config = wallICONS ]; then
+			theming_values >/dev/null ; unset -f theming_values
+			theming_values() { echo "" ; }	
+		fi
+		case "$config" in
+			wallICONS) unset THEMING_ICONS ; THEMING_ICONS=true ;;
+			wallGTK) unset THEMING_GTK ; THEMING_GTK=true ;;
+			wallBACK) PYWAL_BACKEND=$(kdialog --combobox "Pywal Backend In Use" "${BACKENDS[@]}" || cancelCONFIG ) ;;
+			wallTYPE)
+				WALLPAPER_TYPE=$(kdialog --radiolist "Wallpaper Setup Type" "${TYPE[@]}" || cancelCONFIG)
+				WALLPAPER_MODE=$(kdialog --radiolist "Wallpaper Setup Mode" "${MODE[@]}" || exit 0) ;;
+			wallCLR16)
+				unset PYWAL_LIGHT ; PYWAL_LIGHT=true
+				PYWAL_COLORSCHEME=$(kdialog --yes-label "Darken" --no-label "Lighten" --yesno \
+				"Generating 16 Colors must be either:" && echo "darken" || echo "lighten" ) ;;
         esac
     done
 else
 	verbose "Using the previously configured settings"
-	GTK_ACCENT_COLOR="$wallpaperGTKAC"
-	WALL_ICONS_MODE="$wallpaperICONSCLR"
-	WALL_ICONS="$wallpaperICONS"
-	WALL_GTK="$wallpaperGTK"
-	WALL_BACK="$wallpaperBACK"
-	WALL_TYPE="$wallpaperTYPE"
-	WALL_MODE="$wallpaperMODE"
-	WALL_CLR16="$wallpaperCLR16"
-	WALL_CYCLE="$wallpaperCYCLE"
+	assignTEMPCONF ; select_wallpaper 
 fi
-
-# Wallpaper selection
-verbose "Identifying wallpaper mode!"
-if [ "$CONFIG_MODE" = "false" ] && [ -z "$WALL_SELECT" ]; then
-	[ -d "$wallpaperIMG" ] && WALL_SELECT="folder"
-	[ -f "$wallpaperIMG" ] && WALL_SELECT="image"
-fi
-
-case "$WALL_SELECT" in
-	"folder")
-		if [ "$CONFIG_MODE" = true ]; then
-			WALL_CHANGE_FOLDER=$(kdialog --yesno "Do you want to change the wallpaper folder?" && echo "YES")
-			WALL_CYCLE=$(kdialog --yes-label "Orderly" --no-label "Randomly" --yesno \
-				"How to choose you wallpaper in a folder?" && echo "iterative" || echo "recursive" )
-		fi
-		[ -d "$wallpaperIMG" ] && wallSTARTfolder=$wallpaperIMG || llSTARTfolder=$HOME 
-		if [ ! -d "$wallpaperIMG" ]; then
-			kdialog --msgbox "To use random wallpapers, you need to select a folder containing them."
-			WALLPAPER_FOLDER=$(kdialog --getexistingdirectory "$wallSTARTfolder" || exit 0)
-		elif [ "$WALL_CHANGE_FOLDER" = "YES" ]; then
-			WALLPAPER_FOLDER=$(kdialog --getexistingdirectory "$wallSTARTfolder" || exit 0)
-		else
-			WALLPAPER_FOLDER="$wallpaperIMG"
-		fi
-		;;
-	"image")
-		[ "$CONFIG_MODE" = true ] && WALLPAPER=$(kdialog --getopenfilename "$PYWAL16_OUT_DIR" || echo "$wallpaperIMG") || WALLPAPER="$wallpaperIMG"
-		;;
-	*)
-		kdialog --msgbox "Wallpaper type is not configured!\nSo wallpaper is not set..."
-		bash $0 --gui ; exit || rm WALLPAPER_PATH_TEMP
-		;;
-esac
 
 # Only save the config when configured!
-[ "$CONFIG_MODE" = true ] && saveCONFIG ;
+[ "$CONFIG_MODE" = true ] && saveCONFIG ; assignTEMPCONF
 
 # Check if --color16 option is enabled
-[ -z "$wallpaperCLR16" ] && genCLR16op="" || verbose "Enabling 16 colors in pywal..."; \
-	genCLR16op="--cols16 $wallpaperCLR16"
+[ "$pywal16_light" = true ] && verbose "Enabling 16 colors in pywal..."; \
+	PYWAL_GENERATE_LIGHT="--cols16 $pywal_colorscheme"
 
 # call the pywal to get colorsheme
-applyWAL "$wallpaperPATH" "$wallpaperBACK" "$genCLR16op" "$wallpaperCYCLE" || \
+applyWAL "$wallpaper_path" "$pywal16_backend" "$PYWAL_GENERATE_LIGHT" "$wallpaper_cycle" || \
 	$( kdialog --msgbox "Backend is not found, using default instead!!" ; 
-		 applyWAL "$wallpaperPATH" "wal" "$genCLR16op" "$wallpaperCYCLE" )
+		 applyWAL "$wallpaper_path" "wal" "$PYWAL_GENERATE_LIGHT" "$wallpaper_cycle" )
 
 # Make a wallpaper cache to expand the features in setting the wallpaper
 [ -f "${PYWAL16_OUT_DIR}/colors.sh" ] && . "${PYWAL16_OUT_DIR}/colors.sh"
-[ -f "$wallpaper_CACHE" ] && rm $wallpaper_CACHE
-case "$wallpaper" in
-	*.png) cp $wallpaper $wallpaper_CACHE ;;
-	*.gif) convert $wallpaper -coalesce -flatten $wallpaper_CACHE >/dev/null ;;
-	*)     convert $wallpaper $wallpaper_CACHE >/dev/null ;;
+[ -f "$WALLPAPER_CACHE" ] && rm $WALLPAPER_CACHE
+case "$WALLPAPER_CACHE" in
+	*.png) cp $wallpaper $WALLPAPER_CACHE;;
+	*.gif) convert $wallpaper -coalesce -flatten $WALLPAPER_CACHE>/dev/null ;;
+	*)  convert $wallpaper $WALLPAPER_CACHE>/dev/null ;;
 esac
 
 # Finalize Process and making them faster by Functions
-linkCONF_DIR & setwallpaperTYPE && verbose "Process finished!!"	
+linkCONF_DIR & setup_wallpaper && verbose "Process finished!!"	

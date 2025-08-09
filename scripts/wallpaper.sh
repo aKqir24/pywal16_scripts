@@ -1,13 +1,56 @@
-# Wallpaper selection method
-[ -d "$WALLPAPER_FOLDER" ] && [ -d "$wallpaperIMG" ] && \
-	wallpaperPATH=$WALLPAPER_FOLDER || wallpaperPATH="$wallpaperIMG"
+# Wallpaper selection
+select_wallpaper() {
+	verbose "Identifying wallpaper mode!"
+	if [ $CONFIG_MODE = false ] && [ -z "$WALL_SELECT" ]; then
+		[ -d "$wallpaper_path" ] && WALL_SELECT="folder"
+		[ -f "$wallpaper_path" ] && WALL_SELECT="image"
+	else
+		WALL_SELECT=$( kdialog --yes-label "From Image" --no-label "From Folder" \
+			       --yesno "Changing your pywal Wallpaper Selection Method?" && echo "image" || echo "folder")
+	fi
+
+	case "$WALL_SELECT" in
+		"folder")
+			if [ "$CONFIG_MODE" = true ]; then
+				WALLPAPER_CYCLE=$( kdialog --yes-label "Orderly" --no-label "Randomly" --yesno \
+							"How to choose you wallpaper in a folder?" && echo "iterative" || echo "recursive" )
+				WALL_CHANGE_FOLDER=$(kdialog --yesno "Do you want to change the wallpaper folder?" && echo "YES")	
+			fi
+			[ -d "$wallpaper_path" ] && START_FOLDER=$wallpapers_path || START_FOLDER=$HOME
+			if [ "$WALL_CHANGE_FOLDER" = "YES" ]; then
+				WALLPAPER_FOLDER=$(kdialog --getexistingdirectory "$START_FOLDER" || exit 0)
+			elif [ ! -d "$wallpaper_path" ]; then
+				kdialog --msgbox "To set wallpapers from a directory, you need to select a folder containing them."
+				WALLPAPER_FOLDER=$(kdialog --getexistingdirectory "$START_FOLDER" || exit 0)	
+			else
+				WALLPAPER_FOLDER="$wallpaper_path"
+			fi
+			;;
+		"image")
+			[ "$CONFIG_MODE" = true ] && WALLPAPER_IMAGE=$(kdialog --getopenfilename \
+				"$START_FOLDER" || echo "$wallpaper_path") || WALLPAPER_IMAGE="$wallpaper_path"
+			;;
+		*)
+			kdialog --msgbox "Wallpaper type is not configured!\nSo wallpaper is not set..."
+			bash $0 --gui ; exit || rm $WALLPAPER_CACHE
+	esac
+
+	# Wallpaper selection method
+	if [ -d "$WALLPAPER_FOLDER" ]; then
+		WALLPAPER_PATH=$WALLPAPER_FOLDER
+	elif [ -f "$WALLPAPER_IMAGE" ]; then
+		WALLPAPER_PATH=$WALLPAPER_IMAGE
+	else
+		WALLPAPER_PATH="$wallpaper_path"
+	fi
+}
 
 # Function to apply wallpaper using various setters and mapped modes
 set_wallpaper_with_mode() {
     local image_path="$1"
 
     # Mode mappings
-    case "$wallpaperMODE" in
+    case "$wallpaper_mode" in
         "fill")
             local xWallMode="zoom"; local fehMode="fill"; local nitrogenMode="auto"; local swayMode="fill"
             local hsetrootMode="-fill"; local xfceMode=5; local gnomeMode="zoom"; local pcmanfmMode="fit"
@@ -63,13 +106,13 @@ set_wallpaper_with_mode() {
 }
 
 # set the wallpaperIMAGE in display
-setwallpaperTYPE() {
-	verbose "Settings wallpaper..."
-	case "$wallpaperTYPE" in
-		"Solid")
-			convert -size 10x10 xc:"$color8" "$wallpaper_CACHE"
-			set_wallpaper_with_mode "$wallpaper_CACHE" || wallSETTERError ;;
-		"Image") set_wallpaper_with_mode "$wallpaper_CACHE" || wallSETTERError ;;
+setup_wallpaper() {
+	verbose "Setting the wallpaper..."
+	case "$wallpaper_type" in
+		"solid")
+			convert -size 10x10 xc:"$color8" "$WALLPAPER_CACHE"
+			set_wallpaper_with_mode "$WALLPAPER_CACHE" || wallSETTERError ;;
+		"image") set_wallpaper_with_mode "$WALLPAPER_CACHE" || wallSETTERError ;;
 		*) kdialog --msgbox "Wallpaper type is not configured!\nSo wallpaper is not set...";; 
 	esac
 }
