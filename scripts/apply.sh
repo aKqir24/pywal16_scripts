@@ -15,7 +15,7 @@ generateGTKTHEME() {
 	verbose "Generating & setting gtk theme!" &
 	theme_folder="$HOME/.themes/pywal"
 	if [ $theming_gtk = true ]; then
-		bash "$(dirname $0)/theming/gtk/generate.sh" "@$theming_accent"
+		bash "`dirname $0`/theming/gtk/generate.sh" "@$theming_accent"
 	else
 		clean_theme_folder $theme_folder & 
 	fi
@@ -25,7 +25,7 @@ generateICONSTHEME() {
 	verbose "Generating & setting icon theme!" &
 	icons_folder="$HOME/.icons/pywal"
 	if [ $theming_icons = true ]; then 
-		bash "$(dirname $0)/theming/icons/generate.sh" "$theming_mode"
+		bash "`dirname $0`/theming/icons/generate.sh" "$theming_mode"
 	else
 		clean_theme_folder $icons_folder &
 	fi	
@@ -64,7 +64,7 @@ reloadTHEMES() {
 linkCONF_DIR() {	
 	if [ -d "$DEFAULT_PYWAL16_OUT_DIR" ]; then
 		for outFile in "$PYWAL16_OUT_DIR"/*; do
-			local filename=$(basename "$outFile")
+			local filename=`basename "$outFile"`
 			if [ ! -e "$DEFAULT_PYWAL16_OUT_DIR/$filename" ]; then
 				ln -s "$outFile" "$DEFAULT_PYWAL16_OUT_DIR/" >/dev/null
 			fi

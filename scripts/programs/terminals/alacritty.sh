@@ -1,5 +1,4 @@
-changeAlacrittyCONF() {
-  write_toml "
+write_toml "
 .colors.primary.background = \"$color0\" |
 .colors.primary.foreground = \"$color15\" |
 .colors.cursor.text = \"$color0\" |
@@ -33,6 +32,4 @@ changeAlacrittyCONF() {
 .colors.bright.blue = \"$color12\" |
 .colors.bright.magenta = \"$color13\" |
 .colors.bright.cyan = \"$color14\" |
-.colors.bright.white = \"$color15\"" "$1"
-  process "Alacritty"
-}
+.colors.bright.white = \"$color15\"" "$1" &

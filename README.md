@@ -12,7 +12,7 @@ _**DEPENDENCIES**_
 - `pywal16`
 - `kdialog`
 - `imagemagick`
-- `yq` (for toml configuration)
+- `yq`
 - A wallpaper setter (optional):
   - `feh`
   - `hsetroot`
@@ -85,7 +85,7 @@ Things that I might add:
 - [x] `walsetup` add verbose option...
 - [ ] `walsetup` custom bg-color&bgsetup setup
 - [x] `walsetup` wallpaper setter support in some de's
-- [ ] `walsetup` Full icon pywal adptation support
+- [x] `walsetup` Full icon pywal adptation support
 - [x] `waloml` improve adding options
 - [ ] `waloml` support for more terminals & appplications
 - [x] `waloml` fix dunst color generation
