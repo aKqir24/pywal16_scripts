@@ -36,6 +36,8 @@ if [ "$CONFIG_MODE" = true ]; then
 	ToCONFIG=$( kdialog --checklist "Available Configs" "${SETUPS[@]}" --separate-output )
 	assignTEMPCONF >/dev/null ; select_wallpaper ; [ -z "$ToCONFIG" ] && cancelCONFIG
 	theming_values() {
+		[ -z "$theming_mode" ] || PREVIOUS_THMEMING_MODE=$theming_mode
+		[ -z "$theming_accent" ] || PREVIOUS_THMEMING_ACCENT=$theming_accent
 		THEME_MODE=$( kdialog --yes-label "Light" --no-label "Dark" \
 					  --yesno "Select an theme mode, it can be either:" && echo "light" || echo "dark")
 		THEME_ACCENT=$( kdialog --yesno "Change current gtk accent color?" && \
@@ -50,7 +52,8 @@ if [ "$CONFIG_MODE" = true ]; then
 		case "$config" in
 			wallICONS) unset THEMING_ICONS ; THEMING_ICONS=true ;;
 			wallGTK) unset THEMING_GTK ; THEMING_GTK=true ;;
-			wallBACK) PYWAL_BACKEND=$(kdialog --combobox "Pywal Backend In Use" "${BACKENDS[@]}" || cancelCONFIG ) ;;
+			wallBACK) 
+				PYWAL_BACKEND=$(kdialog --combobox "Pywal Backend In Use" "${BACKENDS[@]}" || cancelCONFIG ) ;;
 			wallTYPE)
 				WALLPAPER_TYPE=$(kdialog --radiolist "Wallpaper Setup Type" "${TYPE[@]}" || cancelCONFIG)
 				WALLPAPER_MODE=$(kdialog --radiolist "Wallpaper Setup Mode" "${MODE[@]}" || exit 0) ;;
