@@ -82,9 +82,6 @@ If you happen to use .xinit with i3wm and with or not my [dotfiles](https://aKqi
 bash $HOME/pywal16_scripts/walsetup.sh # To load the configuration!!
 bash $HOME/pywal16_scripts/waloml.sh --alacritty --dunst \
 	--i3status-rs=~/.files/.config/i3/status/config.toml
-bash $HOME/pywal16_scripts/theming/rofi.sh
-source $PYWAL16_OUT_DIR/colors-tty.sh
-
 exec i3
 ```
 > [!note]
@@ -94,7 +91,7 @@ exec i3
 Things that I might add:
 - [x] `walsetup` add verbose option.
 - [ ] `walsetup` add a custom config_dir option.
-- [ ] `walsetup` custom bg-color&bgsetup setup.
+- [ ] `walsetup` custom bg-color & bgsetup setup.
 - [x] `walsetup` wallpaper setter support in some de's.
 - [x] `walsetup` Full icon pywal adptation support.
 - [x] `waloml` improve adding options.
