@@ -40,7 +40,17 @@ Run the following commands in your terminal:
   cd ~/pywal16_scripts
 ```
 ### walsetup (pywal+setup)
-A simple bash script that makes use of kdialog to configure `pywal16`, so that you don't need to type a lot of commands. In addition, I added some features like wallpapers now be able to be solid or not, a setting for the wallpaper to be either fill, scale, and etc, then I added a script to generate gtk themes after pywal16 is done executing using [wpgtk's templates](https://github.com/deviantfero/wpgtk-templates) and for the icons I modified [Flat-Remix](https://github.com/daniruiz/Flat-Remix) icon pack for generating them...
+A simple script to implement ++pywal16++ colors and making the configuration much easier.
+
+This script includes:
+- Dialog configuration along with pywal options
+- Uses the pywal16 option to either have a wallpaper in a folder or just an image.
+- A wallpaper can be set either to `solid_color` or `image`
+- Wallpaper setup options include[ fill, scale, max, fit, etc ]
+- Dialog configuration with the --gui option explained below 
+- Gtk theming based [wpgtk's templates](https://github.com/deviantfero/wpgtk-templates) as base theme.
+- Icon colors based [Flat-Remix](https://github.com/daniruiz/Flat-Remix) icon pack.
+- Relod gtk and icon themes using `xsettingd`.
 ```bash
   bash walsetup.sh --help # For more information 
   bash walsetup.sh --gui # To Configure it
@@ -48,19 +58,19 @@ A simple bash script that makes use of kdialog to configure `pywal16`, so that y
 ```
 
 ### waloml (pywal+toml)
-- _Change i3status-rs theme_
+It fetches the generated pywal16 colors, and apply it to these specific programs.
+> [!Important]
+> Make sure you run `walsetup` first before running this script.
+- Options
 ```bash
-  waloml.sh --i3status-rs=[CONFIG_FILE]
-  bash wal.sh
-```
-- _Change Alacritty colors_
-```bash
+  # Change i3status-rs theme
+  bash waloml.sh --i3status-rs=[CONFIG_FILE]
+
+  # Change Alacritty colors_
   bash waloml.sh --alacritty=[CONFIG_FILE]
-```
-- _Change Dunst Colors_
-```bash
-  bash waloml.sh --dunst
-  pkill dunst ; dunst & 
+
+  # Change Dunst Colors_
+  bash waloml.sh --dunst=[CONFIG_FILE]
 ```
 
 ## EXTRA
