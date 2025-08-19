@@ -40,9 +40,9 @@ Run the following commands in your terminal:
   cd ~/pywal16_scripts
 ```
 ### walsetup (pywal+setup)
-A simple script to implement ++pywal16++ colors and making the configuration much easier.
+A simple script to implement `pywal16` colors and making the configuration much easier.
 
-This script includes:
+**This script includes:**
 - Dialog configuration along with pywal options
 - Uses the pywal16 option to either have a wallpaper in a folder or just an image.
 - A wallpaper can be set either to `solid_color` or `image`
@@ -51,6 +51,7 @@ This script includes:
 - Gtk theming based [wpgtk's templates](https://github.com/deviantfero/wpgtk-templates) as base theme.
 - Icon colors based [Flat-Remix](https://github.com/daniruiz/Flat-Remix) icon pack.
 - Relod gtk and icon themes using `xsettingd`.
+
 ```bash
   bash walsetup.sh --help # For more information 
   bash walsetup.sh --gui # To Configure it
@@ -60,8 +61,7 @@ This script includes:
 ### waloml (pywal+toml)
 It fetches the generated pywal16 colors, and apply it to these specific programs.
 > [!Important]
-> Make sure you run `walsetup` first before running this script.
-- Options
+> Make sure you run the `walsetup` script first before running this script.
 ```bash
   # Change i3status-rs theme
   bash waloml.sh --i3status-rs=[CONFIG_FILE]
