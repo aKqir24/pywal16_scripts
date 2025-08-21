@@ -13,6 +13,7 @@ _**DEPENDENCIES**_
 - `kdialog`
 - `imagemagick`
 - `yq`
+- `xsettingsd`
 - A wallpaper setter (optional):
   - `feh`
   - `hsetroot`
@@ -79,8 +80,8 @@ This script was especially made for i3wm using the debian 13 linux distro, so I 
 If you happen to use .xinit with i3wm and with or not my [dotfiles](https://aKqir24/.files), I already prepared the script for this here, just put it in you `.xinit file` or just look into my [dotfiles](https://aKqir24/.files):
 
 ```bash
-bash $HOME/pywal16_scripts/walsetup.sh # To load the configuration!!
-bash $HOME/pywal16_scripts/waloml.sh --alacritty --dunst \
+bash $HOME/(script_folder)/walsetup.sh # To load the configuration!!
+bash $HOME/(script_folder)/waloml.sh --alacritty --dunst \
 	--i3status-rs=~/.files/.config/i3/status/config.toml
 exec i3
 ```
