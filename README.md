@@ -19,18 +19,19 @@ _**DEPENDENCIES**_
   - `hsetroot`
   - `xwallpaper`
   - `nitrogen`
-
-- Debian ( or Other Debian based distro )
-```bash
+ 
+_**DISTRO**_
+  - Debian ( or Other Debian based distro )
+  ```bash
   sudo apt install kdialog pipx yq imagemagick xwallpaper
   pipx install pywal16
-```
+  ```
 
-- Arch ( AUR )
-```bash
+  - Arch / AUR
+  ```bash
   # You can use something else that works for you like paru
   yay -S kdialog pywal16 yq imagemagick xwallpaper
-```
+  ```
 Other linux based distro might be different, so it may take to update this `README.md` file...
 To load the changes set from the GUI...
 <br>
