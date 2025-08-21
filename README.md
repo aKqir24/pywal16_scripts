@@ -13,7 +13,7 @@ _**DEPENDENCIES**_
 - `kdialog`
 - `imagemagick`
 - `yq`
-- `xsettingsd`
+- `xsettingsd` (optional)
 - A wallpaper setter (optional):
   - `feh`
   - `hsetroot`
