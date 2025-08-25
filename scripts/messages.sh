@@ -17,4 +17,4 @@ verbose() { [ "$VERBOSE" = true ] && echo "walsetup: $1"; }
 wallsetERROR() { kdialog --error "Failed to set wallpaper..."; exit 1; }
 pywalerror() { kdialog --msgbox "pywal ran into an error!\nplease run 'bash $0 --gui' first" ; exit 1 ; }
 wallSETTERError() { kdialog --msgbox "No Wallpaper setter found!\nSo wallpaper is not set..."; }
-cancelCONFIG() { verbose "Configuration Gui was canceled!, it might cause some problems when loading the configuration!"; exit 0; }
+cancelCONFIG() { verbose "Configuration Dialog was canceled!, it might cause some problems when loading the configuration!"; exit 0; }
