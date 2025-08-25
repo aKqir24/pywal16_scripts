@@ -16,11 +16,16 @@ while true; do
 	esac
 done
 
+# Check if some features are already present
+INSTALLED_TAG='(installed)'
+[ -f "$HOME/.icons/pywal/index.theme" ] && ICON_INS_TAG="$INSTALLED_TAG"
+[ -f "$HOME/.themes/pywal/index.theme" ] && GTK_INS_TAG="$INSTALLED_TAG"
+
 # Config option labels
 SETUPS=(  wallBACK "Backend In Use" off \
-		  wallTYPE "Setting Wallpaper" on \
-		  wallGTK "Install Gtk Theme" off \
-		  wallICONS "Install Icon Theme" off \
+		  wallTYPE "Set Wallpaper" on \
+		  wallGTK "Install Gtk Theme $GTK_INS_TAG" off \
+		  wallICONS "Install Icon Theme $ICON_INS_TAG" off \
 		  wallCLR16 "Generate Light Colors" on )
 
 BACKENDS=(	"wal" "colorz" "haishoku" "okthief" \
@@ -34,7 +39,7 @@ GTKCOLORS=() ; for color_no in {0..15}; do GTKCOLORS+=($color_no) ;done
 if [ "$CONFIG_MODE" = true ]; then	
 	verbose "Running kdialog for configuration..."
 	ToCONFIG=$( kdialog --checklist "Available Configs" "${SETUPS[@]}" --separate-output )
-	assignTEMPCONF >/dev/null ; select_wallpaper ; [ -z "$ToCONFIG" ] && cancelCONFIG
+	assignTEMPCONF >/dev/null && [ -z "$ToCONFIG" ] && cancelCONFIG ; select_wallpaper
 	theming_values() {
 		THEME_MODE=$( kdialog --yes-label "Light" --no-label "Dark" \
 					  --yesno "Select an theme mode, it can be either:" && echo "light" || echo "dark")

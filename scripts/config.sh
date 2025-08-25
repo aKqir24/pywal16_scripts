@@ -12,10 +12,11 @@ verbose "Writting & verifying config file"
 [ -d "$PYWAL16_OUT_DIR" ] || mkdir -p "$PYWAL16_OUT_DIR"
 
 # Read the config
-#verbose "Reading config file"
+verbose "Reading config file"
 assignTEMPCONF() {
 	tables=('wallpaper' 'theming' 'pywal6')
-	reader() { tomlq -r ".$1" $WALLPAPER_CONF_PATH ;}
+	JSON_TOML_OUTPUT=$( tomlq '.' $WALLPAPER_CONF_PATH )
+	reader() { jq -r ".$1" <<< $JSON_TOML_OUTPUT ; }
 	for section in ${tables[@]}; do
 		case $section in
 			${tables[0]}) keys=( "cycle" "type" "path" "setup" ) ;;

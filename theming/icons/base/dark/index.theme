@@ -1,7 +1,7 @@
 [Icon Theme]
 Name=pywal(dark)
-Comment=Flat Remix ICON theme for dark interfaces
-Inherits=breeze-dark,elementary,Adwaita,gnome,hicolor
+Comment=Flat Remix ICON theme for light interfaces
+Inherits=breeze,elementary,Adwaita,gnome,hicolor
 
 Example=folder
 
