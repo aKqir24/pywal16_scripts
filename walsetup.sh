@@ -16,28 +16,30 @@ while true; do
 	esac
 done
 
-# Check if some features are already present
-INSTALLED_TAG='(installed)'
-[ -f "$HOME/.icons/pywal/index.theme" ] && ICON_INS_TAG="$INSTALLED_TAG"
-[ -f "$HOME/.themes/pywal/index.theme" ] && GTK_INS_TAG="$INSTALLED_TAG"
+dialog_texts() {
+	# Check if some features are already present
+	INSTALLED_TAG='(installed)'
+	[ -f "$HOME/.icons/pywal/index.theme" ] && ICON_INS_TAG="$INSTALLED_TAG"
+	[ -f "$HOME/.themes/pywal/index.theme" ] && GTK_INS_TAG="$INSTALLED_TAG"
 
-# Config option labels
-SETUPS=(  wallBACK "Backend In Use" off \
-		  wallTYPE "Set Wallpaper" on \
-		  wallGTK "Install Gtk Theme $GTK_INS_TAG" off \
-		  wallICONS "Install Icon Theme $ICON_INS_TAG" off \
-		  wallCLR16 "Generate Light Colors" on )
+	# Config option labels
+	SETUPS=( wallBACK "Backend In Use" off \
+			 wallTYPE "Set Wallpaper" on \
+			 wallGTK "Install Gtk Theme $GTK_INS_TAG" off \
+			 wallICONS "Install Icon Theme $ICON_INS_TAG" off \
+			 wallCLR16 "Generate Light Colors" on )
 
-BACKENDS=(	"wal" "colorz" "haishoku" "okthief" \
-			"modern_colorthief" "schemer2" "colorthief" )
+	BACKENDS=(	"wal" "colorz" "haishoku" "okthief" \
+				"modern_colorthief" "schemer2" "colorthief" )
 
-TYPE=( none "None" off solid "Solid" off image "Image" on )
-MODE=( center "Center" off fill "Fill" on tile "Tile" off full "Full" off cover "Scale" off )
-GTKCOLORS=() ; for color_no in {0..15}; do GTKCOLORS+=($color_no) ;done
+	TYPE=( none "None" off solid "Solid" off image "Image" on )
+	MODE=( center "Center" off fill "Fill" on tile "Tile" off full "Full" off cover "Scale" off )
+	GTKCOLORS=() && for color_number in {0..15}; do GTKCOLORS+=($color_number) ; done
+}
 
 # GUI dialog Configuration
 if [ "$CONFIG_MODE" = true ]; then	
-	verbose "Running kdialog for configuration..."
+	verbose "Running kdialog for configuration..." && dialog_texts
 	ToCONFIG=$( kdialog --checklist "Available Configs" "${SETUPS[@]}" --separate-output )
 	assignTEMPCONF >/dev/null && [ -z "$ToCONFIG" ] && cancelCONFIG ; select_wallpaper
 	theming_values() {
