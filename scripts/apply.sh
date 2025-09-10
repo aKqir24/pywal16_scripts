@@ -25,7 +25,7 @@ generateGTKTHEME() {
 generateICONSTHEME() {
 	verbose "Generating & setting icon theme!" &
 	icons_folder="$HOME/.icons/pywal"
-	if [ $theming_icons = true ]; then 
+	if [ $theming_icons = true ]; then
 		[ -z "$ICON_INS_TAG" ] && bash "$script_dir/theming/icons/generate.sh" "$theming_mode"
 	else
 		clean_theme_folder $icons_folder &

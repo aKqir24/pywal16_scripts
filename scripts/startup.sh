@@ -17,3 +17,8 @@ if [ -z "$PYWAL16_OUT_DIR" -o ! -d "$PYWAL16_OUT_DIR" ]; then
 			export PYWAL16_OUT_DIR=/path/to/folder" ; exit 1 )
 	verbose "Setting up output directory"
 fi
+
+# Check if some features are already present
+INSTALLED_TAG='(installed)'
+[ -f "$HOME/.icons/pywal/index.theme" ] && ICON_INS_TAG="$INSTALLED_TAG"
+[ -f "$HOME/.themes/pywal/index.theme" ] && GTK_INS_TAG="$INSTALLED_TAG"
