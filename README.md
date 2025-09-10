@@ -5,7 +5,7 @@
 A bash script using the kdialog library to ease the configuration in [pywal16](https://github.com/eylles/pywal16).
 
 > [!important] 
-> The script may work in the using the normal `pywal` but it may fail to complete some steps of this script, so please use this fork of pywal called [pywal16](https://github.com/eylles/pywal16) in order to complete some steps in the script.
+> The script may work in the using the normal `pywal` but it may fail to complete some steps of this script, so please use this fork of pywal called [pywal16](https://github.com/eylles/pywal16) in order to complete some steps in the script, also the wallpapers are not uploaded in the repo, so please configure the wallpaper directory first.
 
 ## SETUP
 _**DEPENDENCIES**_
