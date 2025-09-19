@@ -2,8 +2,8 @@
 applyWAL() {
 	[ "$4" = "static" ] && wallCYCLE="" || wallCYCLE="--$4"
 	[ $theming_mode = "light" ] && colorscheme="-l" || colorscheme=""
+	wal $wallCYCLE $colorscheme --backend "$2" -i "$1" $3 -n --out-dir "$PYWAL16_OUT_DIR" >/dev/null || pywalerror
 	verbose "Running 'pywal' for colorscheme... " & generateGTKTHEME & generateICONSTHEME
-	wal $wallCYCLE $colorscheme --backend "$2" -i "$1" $3 -n --out-dir "$PYWAL16_OUT_DIR" >/dev/null || pywalerror 
 	reloadTHEMES &
 }
 
