@@ -12,7 +12,7 @@ A bash script using the kdialog library to ease the configuration in [pywal16](h
 > The gtk4 theming is still on testing process, and gtk3 has inconsistency in some programs like `bleachbit`. So better use gtk2 programs to if you want clean theming.
 
 - Gui Dialog configuration along with pywal options.
-- Pywal colors to some configurable programs.
+- Pywal colors to some configurable programs. ( as toml config arrays )
 - Uses the pywal16 option to either have a wallpaper in a folder or just an image.
 - A wallpaper can be set either to `solid_color` or `image`
 - Wallpaper setup options include[ fill, scale, max, fit, etc ]
