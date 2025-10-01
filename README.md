@@ -7,6 +7,17 @@ A bash script using the kdialog library to ease the configuration in [pywal16](h
 > [!important] 
 > The script may work in the using the normal `pywal` but it may fail to complete some steps of this script, so please use this fork of pywal called [pywal16](https://github.com/eylles/pywal16) in order to complete some steps in the script, also the wallpapers are not uploaded in the repo, so please configure the wallpaper directory first.
 
+## FEATURES
+- Dialog configuration along with pywal options.
+- Pywal colors to some configurable programs.
+- Uses the pywal16 option to either have a wallpaper in a folder or just an image.
+- A wallpaper can be set either to `solid_color` or `image`
+- Wallpaper setup options include[ fill, scale, max, fit, etc ]
+- Dialog configuration with the --gui option explained below 
+- Gtk theming based [wpgtk's templates](https://github.com/deviantfero/wpgtk-templates) as base theme.
+- Icon colors based [Flat-Remix](https://github.com/daniruiz/Flat-Remix) icon pack.
+- Relod gtk and icon themes using `xsettingd`.
+
 ## SETUP
 _**DEPENDENCIES**_
 - `pywal16`
@@ -44,15 +55,6 @@ Run the following commands in your terminal:
 ### walsetup (pywal+setup)
 A simple script to implement `pywal16` colors and making the configuration much easier.
 
-**This script includes:**
-- Dialog configuration along with pywal options
-- Uses the pywal16 option to either have a wallpaper in a folder or just an image.
-- A wallpaper can be set either to `solid_color` or `image`
-- Wallpaper setup options include[ fill, scale, max, fit, etc ]
-- Dialog configuration with the --gui option explained below 
-- Gtk theming based [wpgtk's templates](https://github.com/deviantfero/wpgtk-templates) as base theme.
-- Icon colors based [Flat-Remix](https://github.com/daniruiz/Flat-Remix) icon pack.
-- Relod gtk and icon themes using `xsettingd`.
 
 ```bash
   bash walsetup.sh --help # For more information 
@@ -91,11 +93,12 @@ exec i3
 
 ## Future Plans
 Things that I might add:
-- [x] `walsetup` add verbose option.
-- [ ] `walsetup` add a custom config_dir option.
-- [ ] `walsetup` custom bg-color & bgsetup setup.
-- [x] `walsetup` wallpaper setter support in some de's.
-- [x] `walsetup` Full icon pywal adptation support.
-- [x] `waloml` improve adding options.
-- [ ] `waloml` support for more terminals & appplications.
-- [x] `waloml` fix dunst color generation.
+- [x] Add verbose option.
+- [ ] Merge `waloml` & `walsetup` into one.
+- [ ] Live wallpaper support either in GIF or MP4 fomat.
+- [ ] Add a custom config_dir option.
+- [ ] Custom bg-color & bgsetup setup.
+- [x] Improve wallpaper setter support in some de's.
+- [x] Full icon pywal adptation support
+- [ ] Theming support for more terminals & appplications configs.
+- [x] Fix dunst color generation.
