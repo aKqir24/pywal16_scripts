@@ -3,11 +3,11 @@ applyWAL() {
 	[ "$4" = "static" ] && wallCYCLE="" || wallCYCLE="--$4"
 	[ $theming_mode = "light" ] && colorscheme="-l" || colorscheme=""
 	wal $wallCYCLE $colorscheme --backend "$2" -i "$1" $3 -n --out-dir "$PYWAL16_OUT_DIR" >/dev/null || pywalerror
-	verbose "Running 'pywal' for colorscheme... " & generateGTKTHEME & generateICONSTHEME
+	verbose "Running 'pywal' for colorscheme... " & generateGTKTHEME & generateICONSTHEME ; sleep 1
 	reloadTHEMES &
 }
 
-# To  clean the theme folder when option = false
+# To clean the theme folder when option = false
 clean_theme_folder() { [ -e $"$1" ] && rm -r $1 ; }
 
 # Apply gtk theme / reload gtk theme
@@ -71,4 +71,8 @@ linkCONF_DIR() {
 			fi
 		done
 	fi
+}
+
+applyToPrograms() {
+	bash "$script_dir/theming/programs/genrate.sh"	
 }
