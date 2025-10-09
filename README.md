@@ -33,6 +33,7 @@ _**DEPENDENCIES**_
   - `hsetroot`
   - `xwallpaper`
   - `nitrogen`
+  - `xgifwallpaper` (for gif wallpaper animations)
  
 _**DISTRO**_
   - Debian ( or Other Debian based distro )
