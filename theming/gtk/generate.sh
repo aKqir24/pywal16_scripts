@@ -1,32 +1,17 @@
 #!/bin/sh
 
-# Get current script directory
-WORK_DIR="$(cd "$(dirname "$0")" && pwd)"
-BASE_FOLDER="$WORK_DIR/base"
-
-GTK_CSS_FILES=(
-  "$BASE_FOLDER/gtk-2.0/gtkrc"
-  "$BASE_FOLDER/gtk-3.0/gtk.css"
-  "$BASE_FOLDER/gtk-3.20/gtk.css"
-  "$BASE_FOLDER/gtk-4.0/gtk.css"
-  "$BASE_FOLDER/general/dark.css"
-)
-
 # Copy the base theme directory in .themes
-USER_THEME_FOLDER="$HOME/.themes/pywal"
-
 [ -d $USER_THEME_FOLDER ] || mkdir -p $USER_THEME_FOLDER
-for themeFile in $(find $BASE_FOLDER -mindepth 1 -maxdepth 1); do
+for themeFile in $(find $BASE_THEME_FOLDER -mindepth 1 -maxdepth 1); do
 	FULL_THEME_FILE_DIR="$USER_THEME_FOLDER/$(basename $themeFile)"
 	[ -e "$FULL_THEME_FILE_DIR" ] && rm -r "$FULL_THEME_FILE_DIR"
 	cp -r "$themeFile" "$USER_THEME_FOLDER/"
 done
 
 # since pywal16 does not recognize the gtk-4.0 css file
-# I am forced to do it this way, but be removed in the future 
+# I am forced to do it this way, but be removed in the future
+# This is still in the testing phase
 apply_gtk4_colors() {
-	. "${PYWAL16_OUT_DIR}/colors.sh"
-
 	# Apply sed in-place
 	sed -i \
 		-e "s/{color0}/$color0/g;" \
@@ -80,5 +65,3 @@ for gtkCSSFile in "${GTK_CSS_FILES[@]}"; do
 	  apply_gtk4_colors $temp_file_path
   fi
 done
-
-

@@ -2,7 +2,7 @@
 
 # Import all the scripts
 SCRIPT_PATH="$(dirname $0)/scripts"
-SCRIPT_FILES=(messages config startup wallpaper apply)
+SCRIPT_FILES=(messages config startup wallpaper apply paths)
 for script in ${SCRIPT_FILES[@]}; do . "$SCRIPT_PATH/$script.sh"; done
 
 # Options To be used
@@ -19,7 +19,7 @@ done
 # GUI dialog Configuration
 if [ "$CONFIG_MODE" = true ]; then
 	. "$SCRIPT_PATH/dialogs.sh"
-	else
+else
 	verbose "Using the previously configured settings"
 	assignTEMPCONF ; select_wallpaper 
 fi

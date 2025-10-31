@@ -2,9 +2,6 @@
 
 # Default Config Values
 VERBOSE=false CONFIG_MODE=false
-DEFAULT_PYWAL16_OUT_DIR=$HOME/.cache/wal
-WALLPAPER_CONF_PATH="$HOME/.config/walsetup.toml"
-WALLPAPER_CACHE="$PYWAL16_OUT_DIR/wallpaper.png"
 
 # Write config file
 verbose "Writting & verifying config file"
