@@ -2,7 +2,7 @@
 
 # Import all the scripts
 SCRIPT_PATH="$(dirname $0)/scripts"
-SCRIPT_FILES=(messages config startup wallpaper apply paths)
+SCRIPT_FILES=(paths messages config startup wallpaper apply)
 for script in ${SCRIPT_FILES[@]}; do . "$SCRIPT_PATH/$script.sh"; done
 
 # Options To be used
