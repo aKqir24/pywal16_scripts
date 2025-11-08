@@ -42,7 +42,7 @@ saveCONFIG() {
 		.wallpaper.type = \"$WALLPAPER_TYPE\" |
 		.wallpaper.path = \"$WALLPAPER_PATH\" |
 		.wallpaper.mode = \"$WALLPAPER_MODE\" |
-		.wallpaper.animated = \"$ANIMATED_WALLPAPER\" |
+		.wallpaper.animated = $ANIMATED_WALLPAPER |
 		.theming.gtk = $THEMING_GTK |
 		.theming.icons = $THEMING_ICONS |
 		.theming.mode = \"$THEME_MODE\" |
