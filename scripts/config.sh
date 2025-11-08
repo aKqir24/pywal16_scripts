@@ -49,7 +49,7 @@ saveCONFIG() {
 		.theming.mode = \"$THEME_MODE\" |
 		.theming.accent = \"$THEME_ACCENT_COLOR\" |
 		.pywal16.backend = \"$PYWAL_BACKEND\" |
-		.pywal16.light = \"$PYWAL_LIGHT\" |
+		.pywal16.light = $PYWAL_LIGHT |
 		.pywal16.colorscheme = \"$PYWAL_COLORSCHEME\"" \
 			"$WALLPAPER_CONF_PATH"
 }
