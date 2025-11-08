@@ -4,7 +4,7 @@
 THEMING_ASSETS="$(dirname $0)/assets"
 DEFAULT_PYWAL16_OUT_DIR="$HOME/.cache/wal"
 WALLPAPER_CONF_PATH="$HOME/.config/walsetup.toml"
-WALLPAPER_CACHE="$PYWAL16_OUT_DIR/wallpaper.png"
+WALLPAPER_CACHE="$PYWAL16_OUT_DIR/wallpaper.*"
 
 # ARRAY OF THE PATHS TO PROGRAMS SCRIPTS
 for programs in "terminal" "notification" "status" "launcher"; do
