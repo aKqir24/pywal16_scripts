@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Default Config Values
+# Default options config values
 VERBOSE=false CONFIG_MODE=false
 
 # Write config file
@@ -16,7 +16,7 @@ assignTEMPCONF() {
 	reader() { jq -r ".$1" <<< $JSON_TOML_OUTPUT ; }
 	for section in ${tables[@]}; do
 		case $section in
-			${tables[0]}) keys=( "cycle" "type" "path" "setup" ) ;;
+			${tables[0]}) keys=( "cycle" "type" "path" "setup" "animated" ) ;;
 			${tables[1]}) keys=( "gtk" "icons" "mode" "accent" ) ;;
 			${tables[2]}) keys=( "backend" "light" "colorscheme" )
 		esac
@@ -30,6 +30,7 @@ assignTEMPCONF() {
 # Save config then read it
 saveCONFIG() {
 	verbose "Saving configurations"
+	[ -z "ANIMATED_WALLPAPER" ] && ANIMATED_WALLPAPER=false
 	[ -z "$PYWAL_BACKEND" ] && PYWAL_BACKEND="wal"
 	[ -z "$WALLPAPER_CYCLE" ] && WALLPAPER_CYCLE="static"
 	[ -z "$THEME_MODE" ] && THEME_MODE="dark"
@@ -41,6 +42,7 @@ saveCONFIG() {
 		.wallpaper.type = \"$WALLPAPER_TYPE\" |
 		.wallpaper.path = \"$WALLPAPER_PATH\" |
 		.wallpaper.mode = \"$WALLPAPER_MODE\" |
+		.wallpaper.animated = \"$ANIMATED_WALLPAPER\" |
 		.theming.gtk = $THEMING_GTK |
 		.theming.icons = $THEMING_ICONS |
 		.theming.mode = \"$THEME_MODE\" |

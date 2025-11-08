@@ -80,8 +80,11 @@ set_wallpaper_with_mode() {
 	# Set wallpaper with mode according to the available wallpaper setter
 	local WALL_SETTERS=( xwallpaper hsetroot feh nitrogen swaybg xfconf-query gnome-shell pcmanfm )
 	for wallSETTER in "${WALL_SETTERS[@]}"; do
-		if command -v $wallSETTER >/dev/null; then
+		if command -v $wallSETTER >/dev/null && [ "$ANIMATED_WALLPAPER" == false ]; then
 			local CH_WALLSETTER="$wallSETTER"
+			break
+		else
+			xgifwallpaper #TODO: Setup xgifwallpaper for animated wallpapers
 			break
 		fi
 	done

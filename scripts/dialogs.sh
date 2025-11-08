@@ -1,6 +1,7 @@
 # Config option labels
 SETUPS=( wallBACK "Backend In Use" off \
 		 wallTYPE "Set Wallpaper" on \
+		 wallANIM "Animated Wallpapers" on \
 		 wallGTK "Install Gtk Theme $GTK_INS_TAG" off \
 		 wallICONS "Install Icon Theme $ICON_INS_TAG" off \
 		 wallCLR16 "Generate Light Colors" on )
@@ -33,6 +34,7 @@ for config in $ToCONFIG; do
 	case "$config" in
 		wallICONS) unset THEMING_ICONS ; THEMING_ICONS=true ;;
 		wallGTK) unset THEMING_GTK ; THEMING_GTK=true ;;
+		wallANIM) unset ANIMATED_WALLPAPER ; ANIMATED_WALLPAPER=true ;;
 		wallBACK) PYWAL_BACKEND=$(kdialog --combobox "Pywal Backend In Use" "${BACKENDS[@]}" || cancelCONFIG ) ;;
 		wallTYPE)
 			WALLPAPER_TYPE=$(kdialog --radiolist "Wallpaper Setup Type" "${TYPE[@]}" || cancelCONFIG)
