@@ -108,6 +108,11 @@ set_wallpaper_with_mode() {
 # set the wallpaperIMAGE in display
 setup_wallpaper() {
 	verbose "Setting the wallpaper..."
+	case "$wallpaper" in
+		*.png) cp $wallpaper $WALLPAPER_CACHE ;;
+		*.gif) convert $wallpaper -coalesce -flatten $WALLPAPER_CACHE>/dev/null ;;
+		*)  convert $wallpaper $WALLPAPER_CACHE>/dev/null
+	esac
 	case "$wallpaper_type" in
 		"solid")
 			convert -size 10x10 xc:"$color8" "$WALLPAPER_CACHE"

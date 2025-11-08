@@ -39,11 +39,7 @@ applyWAL "$wallpaper_path" "$pywal16_backend" "$PYWAL_GENERATE_LIGHT" "$wallpape
 # Make a wallpaper cache to expand the features in setting the wallpaper
 [ -f "${PYWAL16_OUT_DIR}/colors.sh" ] && . "${PYWAL16_OUT_DIR}/colors.sh"
 [ -f "$WALLPAPER_CACHE" ] && rm $WALLPAPER_CACHE
-case "$wallpaper" in
-	*.png) cp $wallpaper $WALLPAPER_CACHE ;;
-	*.gif) convert $wallpaper -coalesce -flatten $WALLPAPER_CACHE>/dev/null ;;
-	*)  convert $wallpaper $WALLPAPER_CACHE>/dev/null
-esac
+
 
 # Finalize Process and making them faster by Functions
 linkCONF_DIR & setup_wallpaper && verbose "Process finished!!"	

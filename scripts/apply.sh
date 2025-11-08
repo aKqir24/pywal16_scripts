@@ -11,7 +11,6 @@ applyWAL() {
 clean_theme_folder() { [ -e $"$1" ] && rm -r $1 ; }
 
 # Apply gtk theme / reload gtk theme
-script_dir="$(dirname $0)"
 generateGTKTHEME() {
 	verbose "Generating & setting gtk theme!" &
 	theme_folder="$HOME/.themes/pywal"
