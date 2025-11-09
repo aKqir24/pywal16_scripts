@@ -54,38 +54,48 @@ set_wallpaper_with_mode() {
         "fill")
             local xWallMode="zoom"; local fehMode="fill"; local nitrogenMode="auto"; local swayMode="fill"
             local hsetrootMode="-fill"; local xfceMode=5; local gnomeMode="zoom"; local pcmanfmMode="fit"
+			local xgifwallpaperMode="FILL"
             ;;
         "full")
             local xWallMode="maximize"; local fehMode="max"; local nitrogenMode="scaled"; local swayMode="fit"
             local hsetrootMode="-full"; local xfceMode=4; local gnomeMode="scaled"; local pcmanfmMode="stretch"
+			local xgifwallpaperMode="MAX"
             ;;
         "tile")
             local xWallMode="tile"; local fehMode="tile"; local nitrogenMode="tiled"; local swayMode="tile"
             local hsetrootMode="-tile"; local xfceMode=1; local gnomeMode="wallpaper"; local pcmanfmMode="tile"
+			local xgifwallpaperMode="NONE"
             ;;
         "center")
             local xWallMode="center"; local fehMode="centered"; local nitrogenMode="centered"; local swayMode="center"
             local hsetrootMode="-center"; local xfceMode=2; local gnomeMode="centered"; local pcmanfmMode="center"
+			local xgifwallpaperMode="NONE"
             ;;
         "cover")
             local xWallMode="stretch"; local fehMode="scale"; local nitrogenMode="zoom"; local swayMode="stretch"
             local hsetrootMode="-full"; local xfceMode=5; local gnomeMode="zoom"; local pcmanfmMode="stretch"
+			local xgifwallpaperMode="NONE"
             ;;
         *)
             local xWallMode="zoom"; local fehMode="fill"; local nitrogenMode="auto"; local swayMode="fill"
             local hsetrootMode="-fill"; local xfceMode=5; local gnomeMode="zoom"; local pcmanfmMode="fit"
+			local xgifwallpaperMode="NONE"
             ;;
     esac
 	
 	# Set wallpaper with mode according to the available wallpaper setter
-	local WALL_SETTERS=( xwallpaper hsetroot feh nitrogen swaybg xfconf-query gnome-shell pcmanfm )
+	local WALL_SETTERS=( xwallpaper hsetroot feh nitrogen swaybg xfconf-query gnome-shell pcmanfm xgifwallpaper )
 	for wallSETTER in "${WALL_SETTERS[@]}"; do
-		if command -v $wallSETTER >/dev/null && [ "$ANIMATED_WALLPAPER" == false ]; then
+		if command -v $wallSETTER >/dev/null && [ "$ANIMATED_WALLPAPER" == false ] && [[ $wallpaper != '*.gif' ]]; then
 			local CH_WALLSETTER="$wallSETTER"
 			break
-		else
-			xgifwallpaper #TODO: Setup xgifwallpaper for animated wallpapers
+		else if command -v $wallSETTER >/dev/null; then
+			local CH_WALLSETTER="${WALL_SETTERS[8]}"
 			break
+		else
+			if [ "$ANIMATED_WALLPAPER" == false ]; then 
+				kdialog --sorry "Animated wallpaper is set to false, falling back to static image..."
+			fi
 		fi
 	done
     case "$CH_WALLSETTER" in 
@@ -97,13 +107,14 @@ set_wallpaper_with_mode() {
 		"${WALL_SETTERS[5]}")
 			xfconf-query --channel xfce4-desktop --property /backdrop/screen0/monitor0/image-style --set $xfceMode &&
 			xfconf-query --channel xfce4-desktop --property /backdrop/screen0/monitor0/image-path --set "$image_path" || \
-			wallsetERROR 1
+			wallsetERROR
 		;;
 		"${WALL_SETTERS[6]}")
 			gsettings set org.gnome.desktop.background picture-uri "file://$image_path" &&
 			gsettings set org.gnome.desktop.background picture-options "$gnomeMode" || wallsetERROR
 		;;
 		"${WALL_SETTERS[7]}") pcmanfm --set-wallpaper "$image_path" --wallpaper-mode "$pcmanfmMode" || wallsetERROR ;;
+		"${WALL_SETTERS[8]}") xgifwallpaper -s $xgifwallpaperMode "$image_path" ;;
 		*) kdialog --error "No supported wallpaper setter found!" return 1 ;;
 	esac
 }
