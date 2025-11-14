@@ -1,10 +1,11 @@
 # Check for required dependencies
 command -v wal > /dev/null || echo "pywal16 is not installed, Please install it!"
-if [ "$CONFIG_MODE" = true ]; then
-	if ! command -v kdialog >/dev/null; then
-		echo "kdialog is not installed, Please install it!"
-		exit 1
-	fi
+if [ "$SETUP" = true ] && command -v kdialog >/dev/null; then
+	echo "kdialog is not installed, Please install it!"
+	exit 1
+else if [ "$SETUP" = false ] && command -v python3 >/dev/null; then
+	echo "python is not installed, Please install it!"
+	exit 1
 fi
 
 # Check for PYWAL16_OUT_DIR

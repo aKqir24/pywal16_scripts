@@ -20,12 +20,12 @@ done
 
 # GUI dialog Configuration
 if [ "$GUI" = true ] && [ "$SETUP" = true ]; then
-	verbose "You can only select one of the config optios."
+	VERBOSE=true ; verbose "You can only select one of the config optios."
 	exit 1
 else if [ "$SETUP" = true ]; then
 	. "$SCRIPT_PATH/dialogs.sh"
 else if [ "$GUI" = true ]; then
-	verbose "The '--gui' option is still in development..."
+	VERBOSE=true ; verbose "The '--gui' option is still in development..."
 	exit 1
 else
 	if [ "$LOAD" = true ]; then

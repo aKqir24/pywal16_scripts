@@ -28,6 +28,7 @@ _**DEPENDENCIES**_
 - `imagemagick`
 - `yq`
 - `xsettingsd` (optional)
+- `python` & `python-gi`(for gui configuration)
 - A wallpaper setter (optional):
   - `feh`
   - `hsetroot`

@@ -45,3 +45,32 @@ for config in $ToCONFIG; do
 			"Generating 16 Colors must be either:" && echo "darken" || echo "lighten" ) ;;
     esac
 done
+
+# Wallpaper select config
+wall_select_options() {
+	case "$WALL_SELECT" in
+		"folder")
+			if [ "$SETUP" = true ]; then
+				WALLPAPER_CYCLE=$( kdialog --yes-label "Orderly" --no-label "Randomly" --yesno \
+							"How to choose you wallpaper in a folder?" && echo "iterative" || echo "recursive" )
+				WALL_CHANGE_FOLDER=$(kdialog --yesno "Do you want to change the wallpaper folder?" && echo "YES")	
+			fi
+			[ -d "$wallpaper_path" ] && START_FOLDER=$wallpapers_path || START_FOLDER=$HOME
+			if [ "$WALL_CHANGE_FOLDER" = "YES" ]; then
+				WALLPAPER_FOLDER=$(kdialog --getexistingdirectory "$START_FOLDER" || exit 0)
+			elif [ ! -d "$wallpaper_path" ]; then
+				kdialog --msgbox "To set wallpapers from a directory, you need to select a folder containing them."
+				WALLPAPER_FOLDER=$(kdialog --getexistingdirectory "$START_FOLDER" || exit 0)	
+			else
+				WALLPAPER_FOLDER="$wallpaper_path"
+			fi
+			;;
+		"image")
+			[ "$SETUP" = true ] && WALLPAPER_IMAGE=$(kdialog --getopenfilename \
+				"$START_FOLDER" || echo "$wallpaper_path") || WALLPAPER_IMAGE="$wallpaper_path"
+			;;
+		*)
+			kdialog --msgbox "Wallpaper type is not configured!\nSo wallpaper is not set..."
+			bash $0 --setup ; exit || rm $WALLPAPER_CACHE
+	esac
+}
