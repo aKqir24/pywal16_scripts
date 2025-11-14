@@ -9,7 +9,9 @@ for script in ${SCRIPT_FILES[@]}; do . "$SCRIPT_PATH/$script.sh"; done
 OPTS=$(getopt -o -v --long verbose,gui,help -- "$@") ; eval set -- "$OPTS"
 while true; do
 	case "$1" in
-		--gui) CONFIG_MODE=true; shift ;;
+		--gui) GUI=true shift;;
+		--load) LOAD=true;shift;;
+		--setup) SETUP=true; shift;;
 		--verbose) VERBOSE=true; shift ;;
 		--help) echo "wallsetup: $HELP_MESSAGE"; exit 0; shift;;
 		--) shift; break ;;
@@ -17,15 +19,25 @@ while true; do
 done
 
 # GUI dialog Configuration
-if [ "$CONFIG_MODE" = true ]; then
+if [ "$GUI" = true ] && [ "$SETUP" = true ]; then
+	verbose "You can only select one of the config optios."
+	exit 1
+else if [ "$SETUP" = true ]; then
 	. "$SCRIPT_PATH/dialogs.sh"
+else if [ "$GUI" = true ]; then
+	verbose "The '--gui' option is still in development..."
+	exit 1
 else
-	verbose "Using the previously configured settings"
-	assignTEMPCONF ; select_wallpaper 
+	if [ "$LOAD" = true ]; then
+		verbose "Using the previously configured settings"
+		assignTEMPCONF ; select_wallpaper 
+	else
+		echo "wallsetup: $HELP_MESSAGE"; exit 0	
+	fi
 fi
 
 # Only save the config when configured!
-[ "$CONFIG_MODE" = true ] && saveCONFIG ; assignTEMPCONF
+[ "$SETUP" = true ] || [ "$GUI" = true ] && saveCONFIG ; assignTEMPCONF
 
 # Check if --color16 option is enabled
 [ "$pywal16_light" = true ] && verbose "Enabling 16 colors in pywal..."; \

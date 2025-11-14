@@ -6,10 +6,11 @@ to ease the configuration in pywal, also it adds more functionality in pywal16 w
 are writen in the https://github.com/aKqir24/pywal16_scripts.
 
 Usage: $0 [OPTIONS]
-  --gui: To launch a configuration dialogs and apply the configurations.
+  --setup: Show dialogs that sets up the configurations in order.
+  --gui: To launch a configuration GUI and apply the configurations.
   --verbose: To show log messages when each step of the script is executed.
   --help: to show how to use this script.
-  *: 'not putting any options' loads/applies the configurations.
+  --load:loads/applies the configurations.
 "
 
 # Functions than is defined to handle disagreements, errors, and info's
