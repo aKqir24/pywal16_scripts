@@ -1,15 +1,14 @@
 # Wallpaper selection
 select_wallpaper() {
 	verbose "Identifying wallpaper mode!"
-	if [ $LOAD = true ] && [ -z "$WALL_SELECT" ] && [ $SETUP = false ]; then
-		[ -d "$wallpaper_path" ] && WALL_SELECT="folder"
-		[ -f "$wallpaper_path" ] && WALL_SELECT="image"
-	else
+	if [ -z "$WALL_SELECT" ] && [ "$SETUP" = true ]; then
 		WALL_SELECT=$( kdialog --yes-label "From Image" --no-label "From Folder" \
 			       --yesno "Changing your pywal Wallpaper Selection Method?" && echo "image" || echo "folder")
+		wall_select_options
+	else
+		[ -d "$wallpaper_path" ] && WALLPAPER_FOLDER="$wallpaper_path"
+		[ -f "$wallpaper_path" ] && WALLPAPER_IMAGE="$wallpaper_path"
 	fi
-
-	wall_select_options
 
 	# Wallpaper selection method
 	if [ -d "$WALLPAPER_FOLDER" ]; then
@@ -32,7 +31,7 @@ set_wallpaper_with_mode() {
 
     # Mode mappings
     case "$wallpaper_mode" in
-        "fill") xgifwallpaperMode="FILL" # This the default no need to duplicate
+        "fill") xgifwallpaperMode="FILL" # This the default condition no need to duplicate
             ;;
         "full")
             local xWallMode="maximize"; local fehMode="max"; local nitrogenMode="scaled"; local swayMode="fit"
@@ -56,16 +55,16 @@ set_wallpaper_with_mode() {
 	# Set wallpaper with mode according to the available wallpaper setter
 	local WALL_SETTERS=( xwallpaper hsetroot feh nitrogen swaybg xfconf-query gnome-shell pcmanfm xgifwallpaper )
 	for wallSETTER in "${WALL_SETTERS[@]}"; do
-		if command -v $wallSETTER >/dev/null && [ "$ANIMATED_WALLPAPER" == false ] && [[ $wallpaper != '*.gif' ]]; then
-			local CH_WALLSETTER="$wallSETTER"
-			break
-		else if command -v $wallSETTER >/dev/null; then
+		if command -v "$wallSETTER" >/dev/null && [ "$ANIMATED_WALLPAPER" == true ]; then
 			local CH_WALLSETTER="${WALL_SETTERS[8]}"
 			break
 		else
-			if [ "$ANIMATED_WALLPAPER" == false ]; then 
-				kdialog --sorry "Animated wallpaper is set to false, falling back to static image..."
-			fi
+			ANIMATED_WALLPAPER=false
+			kdialog --sorry "Animated wallpaper is set to false, falling back to static image..."
+		fi
+		if command -v "$wallSETTER" >/dev/null && [[ $wallpaper != '*.gif' ]]; then
+			local CH_WALLSETTER="$wallSETTER"
+			break
 		fi
 	done
     case "$CH_WALLSETTER" in 
@@ -93,11 +92,11 @@ set_wallpaper_with_mode() {
 setup_wallpaper() {
 	verbose "Setting the wallpaper..."
 	case "$wallpaper" in
-		*.png) cp $wallpaper $WALLPAPER_CACHE ;;
+		*.png) cp "$wallpaper" $WALLPAPER_CACHE ;;
 		*.gif)
-			[ "ANIMATED_WALLPAPER" = true ] && cp $wallpaper $WALLPAPER_CACHE || \
-				convert $wallpaper -coalesce -flatten $WALLPAPER_CACHE>/dev/null ;;
-		*)  convert $wallpaper $WALLPAPER_CACHE>/dev/null
+			convert "$wallpaper" -coalesce -flatten $WALLPAPER_CACHE>/dev/null
+			[ "ANIMATED_WALLPAPER" = true ] && cp "$wallpaper" $WALLPAPER_CACHE.gif && WALLPAPER_CACHE="$WALLPAPER_CACHE.gif";;
+		*)  convert "$wallpaper" $WALLPAPER_CACHE>/dev/null
 	esac
 	case "$wallpaper_type" in
 		"solid")

@@ -61,13 +61,11 @@ wall_select_options() {
 			elif [ ! -d "$wallpaper_path" ]; then
 				kdialog --msgbox "To set wallpapers from a directory, you need to select a folder containing them."
 				WALLPAPER_FOLDER=$(kdialog --getexistingdirectory "$START_FOLDER" || exit 0)	
-			else
-				WALLPAPER_FOLDER="$wallpaper_path"
 			fi
 			;;
 		"image")
 			[ "$SETUP" = true ] && WALLPAPER_IMAGE=$(kdialog --getopenfilename \
-				"$START_FOLDER" || echo "$wallpaper_path") || WALLPAPER_IMAGE="$wallpaper_path"
+				"$START_FOLDER" || echo "$wallpaper_path")
 			;;
 		*)
 			kdialog --msgbox "Wallpaper type is not configured!\nSo wallpaper is not set..."

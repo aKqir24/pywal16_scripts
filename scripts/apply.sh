@@ -1,9 +1,11 @@
+#!/bin/bash
+
 # Function to apply wallpaper using pywal16
 applyWAL() {
 	[ "$4" = "static" ] && wallCYCLE="" || wallCYCLE="--$4"
-	[ $theming_mode = "light" ] && colorscheme="-l" || colorscheme=""
+	[ $theming_mode = "light" ] && colorscheme="-l" || colorscheme=""	
 	wal $wallCYCLE $colorscheme --backend "$2" -i "$1" $3 -n --out-dir "$PYWAL16_OUT_DIR" >/dev/null || pywalerror
-	verbose "Running 'pywal' for colorscheme... " & generateGTKTHEME & generateICONSTHEME ; sleep 1
+	verbose "Running 'pywal' for colorscheme... " && generateGTKTHEME && generateICONSTHEME ; sleep 1
 	reloadTHEMES &
 }
 
@@ -13,21 +15,19 @@ clean_theme_folder() { [ -e $"$1" ] && rm -r $1 ; }
 # Apply gtk theme / reload gtk theme
 generateGTKTHEME() {
 	verbose "Generating & setting gtk theme!" &
-	theme_folder="$HOME/.themes/pywal"
 	if [ $theming_gtk = true ]; then
-		[ -z "$GTK_INS_TAG" ] && bash "$script_dir/theming/gtk/generate.sh" "@$theming_accent"
+		[ -z "$GTK_INS_TAG" ] && . "$SCRIPT_PATH/theming/gtk.sh" "@$theming_accent"
 	else
-		clean_theme_folder $theme_folder & 
+		clean_theme_folder $USER_THEME_FOLDER & 
 	fi
 }
 
 generateICONSTHEME() {
 	verbose "Generating & setting icon theme!" &
-	icons_folder="$HOME/.icons/pywal"
 	if [ $theming_icons = true ]; then
-		[ -z "$ICON_INS_TAG" ] && bash "$script_dir/theming/icons/generate.sh" "$theming_mode"
+		[ -z "$ICON_INS_TAG" ] && . "$SCRIPT_PATH/theming/icons.sh" "$theming_mode"
 	else
-		clean_theme_folder $icons_folder &
+		clean_theme_folder $USER_ICONS_FOLDER &
 	fi	
 }
 
@@ -62,9 +62,9 @@ reloadTHEMES() {
 
 # Still pywalfox uses 'The Default OutDir in pywal so just link them to the default'
 linkCONF_DIR() {	
-	if [ -d "$DEFAULT_PYWAL16_OUT_DIR" ]; then
+	if [ -d "$DEFAULT_PYWAL16_OUT_DIR" ] && [ "$DEFAULT_PYWAL16_OUT_DIR" != "$PYWAL16_OUT_DIR" ]; then
 		for outFile in "$PYWAL16_OUT_DIR"/*; do
-			local filename=`basename "$outFile"`
+			local filename="$(basename "$outFile")"
 			if [ ! -e "$DEFAULT_PYWAL16_OUT_DIR/$filename" ]; then
 				ln -s "$outFile" "$DEFAULT_PYWAL16_OUT_DIR/" >/dev/null
 			fi

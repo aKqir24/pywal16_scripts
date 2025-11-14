@@ -1,14 +1,14 @@
 #!/bin/bash
 
 # DEFAULT PATHS FOR CONFIG:
-THEMING_ASSETS="$(dirname $0)/assets"
+THEMING_ASSETS="$(pwd)/assets"
 DEFAULT_PYWAL16_OUT_DIR="$HOME/.cache/wal"
-WALLPAPER_CONF_PATH="$HOME/.config/walsetup.toml"
-WALLPAPER_CACHE="$PYWAL16_OUT_DIR/wallpaper.*"
+WALLPAPER_CONF_PATH="$HOME/.config/walset.toml"
+WALLPAPER_CACHE="$PYWAL16_OUT_DIR/wallpaper.png"
 
 # ARRAY OF THE PATHS TO PROGRAMS SCRIPTS
-for programs in "terminal" "notification" "status" "launcher"; do
-	PROGRAMS_DIR+=("$SCRIPTS_PATH/programs/$programs")
+for program in "terminal" "notification" "status" "launcher"; do
+	PROGRAMS_DIR+=("$SCRIPT_PATH/programs/$program")
 done
 
 # GTK THEMING PATHS
