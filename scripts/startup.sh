@@ -1,11 +1,11 @@
-#!/bin/sh
+#!/bin/bash
 
 # Check for required dependencies
 command -v wal > /dev/null || echo "pywal16 is not installed, Please install it!"
-if [ $LOAD = false ]; then
-	if [ "$SETUP" = true ] && command -v kdialog >/dev/null; then
+if $LOAD; then
+	if $SETUP && ! command -v kdialog >/dev/null; then
 		echo "kdialog is not installed, Please install it!" ; exit 1
-	elif [ "$SETUP" = false ] && command -v python3 >/dev/null; then
+	elif $SETUP && ! command -v python3 >/dev/null; then
 		echo "python is not installed, Please install it!" ; exit 1
 	fi
 fi
@@ -22,7 +22,7 @@ if [ -z "$PYWAL16_OUT_DIR" ] || [ ! -d "$PYWAL16_OUT_DIR" ]; then
 fi
 
 # Check for PYWAL16_OUT_DIR temp folder
-if [ ! -d "$PYWAL16_OUT_DIR/templates" ] && [ -d "$PYWAL16_OUT_DIR" ]; then
+if [ ! -d "$PYWAL16_OUT_DIR/templates" ]; then
 	mkdir -p $PYWAL16_OUT_DIR/templates
 else
 	mkdir -p $DEFAULT_PYWAL16_OUT_DIR/templates

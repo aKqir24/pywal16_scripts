@@ -92,10 +92,10 @@ set_wallpaper_with_mode() {
 setup_wallpaper() {
 	verbose "Setting the wallpaper..."
 	case "$wallpaper" in
-		*.png) cp "$wallpaper" $WALLPAPER_CACHE ;;
+		*.png) cp "$wallpaper" "$WALLPAPER_CACHE" ;;
 		*.gif)
-			convert "$wallpaper" -coalesce -flatten $WALLPAPER_CACHE>/dev/null
-			[ "ANIMATED_WALLPAPER" = true ] && cp "$wallpaper" $WALLPAPER_CACHE.gif && WALLPAPER_CACHE="$WALLPAPER_CACHE.gif";;
+			convert "$wallpaper" -coalesce -flatten "$WALLPAPER_CACHE">/dev/null
+			[ "ANIMATED_WALLPAPER" = true ] && cp "$wallpaper" "$WALLPAPER_CACHE.gif" && WALLPAPER_CACHE="$WALLPAPER_CACHE.gif";;
 		*)  convert "$wallpaper" $WALLPAPER_CACHE>/dev/null
 	esac
 	case "$wallpaper_type" in

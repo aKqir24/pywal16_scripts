@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Config option labels
 SETUPS=( wallBACK "Backend In Use" off \
 		 wallTYPE "Set Wallpaper" on \
@@ -11,7 +13,7 @@ SETUPS=( wallBACK "Backend In Use" off \
 
 	TYPE=( none "None" off solid "Solid" off image "Image" on )
 	MODE=( center "Center" off fill "Fill" on tile "Tile" off full "Full" off cover "Scale" off )
-	GTKCOLORS=() && for color_number in {0..15}; do GTKCOLORS+=($color_number) ; done
+	GTKCOLORS=() && for color_number in {0..15}; do GTKCOLORS+=("$color_number") ; done
 
 # Start Configuration dialogs
 verbose "Running kdialog for configuration..." &
@@ -27,7 +29,7 @@ theming_values() {
 
 # Configuration Dialogs
 for config in $ToCONFIG; do
-	if [ $config = wallGTK -o $config = wallICONS ]; then
+	if [ "$config" = wallGTK ] || [ "$config" = wallICONS ]; then
 		theming_values >/dev/null ; unset -f theming_values
 		theming_values() { echo "" ; }	
 	fi
@@ -50,7 +52,7 @@ done
 wall_select_options() {
 	case "$WALL_SELECT" in
 		"folder")
-			if [ "$SETUP" = true ]; then
+			if $SETUP; then
 				WALLPAPER_CYCLE=$( kdialog --yes-label "Orderly" --no-label "Randomly" --yesno \
 							"How to choose you wallpaper in a folder?" && echo "iterative" || echo "recursive" )
 				WALL_CHANGE_FOLDER=$(kdialog --yesno "Do you want to change the wallpaper folder?" && echo "YES")	
@@ -64,11 +66,11 @@ wall_select_options() {
 			fi
 			;;
 		"image")
-			[ "$SETUP" = true ] && WALLPAPER_IMAGE=$(kdialog --getopenfilename \
+			$SETUP && WALLPAPER_IMAGE=$(kdialog --getopenfilename \
 				"$START_FOLDER" || echo "$wallpaper_path")
 			;;
 		*)
 			kdialog --msgbox "Wallpaper type is not configured!\nSo wallpaper is not set..."
-			bash $0 --setup ; exit || rm $WALLPAPER_CACHE
+			bash "$0" --setup ; exit
 	esac
 }

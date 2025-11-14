@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Default options config values
-VERBOSE=false SETUP=false GUI=false LOAD=true
+VERBOSE=false SETUP=false GUI=false LOAD=false
 
 # Write config file
 verbose "Writting & verifying config file"
@@ -11,18 +11,18 @@ verbose "Writting & verifying config file"
 # Read the config
 verbose "Reading config file"
 assignTEMPCONF() {
-	tables=('wallpaper' 'theming' 'pywal6')
-	JSON_TOML_OUTPUT=$( tomlq '.' $WALLPAPER_CONF_PATH )
-	reader() { jq -r ".$1" <<< $JSON_TOML_OUTPUT ; }
-	for section in ${tables[@]}; do
+	tables=('wallpaper' 'theming' 'pywal16')
+	JSON_TOML_OUTPUT=$( tomlq '.' "$WALLPAPER_CONF_PATH" )
+	reader() { jq -r ".$1" <<< "$JSON_TOML_OUTPUT" ; }
+	for section in "${tables[@]}"; do
 		case $section in
-			${tables[0]}) keys=( "cycle" "type" "path" "setup" "animated" ) ;;
-			${tables[1]}) keys=( "gtk" "icons" "mode" "accent" ) ;;
-			${tables[2]}) keys=( "backend" "light" "colorscheme" )
+			"${tables[0]}") keys=( "cycle" "type" "path" "mode" "animated" ) ;;
+			"${tables[1]}") keys=( "gtk" "icons" "mode" "accent" ) ;;
+			"${tables[2]}") keys=( "backend" "light" "colorscheme" ) ;;
 		esac
-		for key in ${keys[@]}; do
-			value="$(reader $section.$key)"
-			declare -g "${section}_$key=$value"
+		for key in "${keys[@]}"; do
+			value="$(reader "$section"."$key")"
+			declare -g "${section}_$key=$value"	
 		done
 	done
 }
@@ -30,7 +30,7 @@ assignTEMPCONF() {
 # Save config then read it
 saveCONFIG() {
 	verbose "Saving configurations"
-	[ -z "ANIMATED_WALLPAPER" ] && ANIMATED_WALLPAPER=false
+	[ -z "$ANIMATED_WALLPAPER" ] && ANIMATED_WALLPAPER=false
 	[ -z "$PYWAL_BACKEND" ] && PYWAL_BACKEND="wal"
 	[ -z "$WALLPAPER_CYCLE" ] && WALLPAPER_CYCLE="static"
 	[ -z "$THEME_MODE" ] && THEME_MODE="dark"
