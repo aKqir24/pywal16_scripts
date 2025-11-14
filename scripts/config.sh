@@ -14,12 +14,12 @@ verbose "Writting & verifying config file"
 # Read the config
 verbose "Reading config file"
 assignTEMPCONF() {
-	tables=('wallpaper' 'theming' 'pywal6')
+	tables=('wallpaper' 'theming' 'pywal16')
 	JSON_TOML_OUTPUT=$( tomlq '.' $WALLPAPER_CONF_PATH )
 	reader() { jq -r ".$1" <<< $JSON_TOML_OUTPUT ; }
 	for section in ${tables[@]}; do
 		case $section in
-			${tables[0]}) keys=( "cycle" "type" "path" "setup" ) ;;
+			${tables[0]}) keys=( "cycle" "type" "path" "mode" ) ;;
 			${tables[1]}) keys=( "gtk" "icons" "mode" "accent" ) ;;
 			${tables[2]}) keys=( "backend" "light" "colorscheme" )
 		esac
