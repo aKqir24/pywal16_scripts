@@ -8,18 +8,15 @@ A bash script using the kdialog library to ease the configuration in [pywal16](h
 > The script may work in the using the normal `pywal` but it may fail to complete some steps of this script, so please use this fork of pywal called [pywal16](https://github.com/eylles/pywal16) in order to complete some steps in the script, also the wallpapers are not uploaded in the repo, so please configure the wallpaper directory first.
 
 ## FEATURES
-> [!warning]
-> The gtk4 theming is still on testing process, and gtk3 has inconsistency in some programs like `bleachbit`. So better use gtk2 programs to if you want clean theming.
-
 - Gui Dialog configuration along with pywal options.
 - Pywal colors to some configurable programs. ( as toml config arrays )
 - Uses the pywal16 option to either have a wallpaper in a folder or just an image.
 - A wallpaper can be set either to `solid_color` or `image`
 - Wallpaper setup options include[ fill, scale, max, fit, etc ]
 - Dialog configuration with the --gui option explained below 
-- Gtk theming based [wpgtk's templates](https://github.com/deviantfero/wpgtk-templates) as base theme.
+- Gtk theming based [Flat-Remix-GTK](https://github.com/daniruiz/Flat-Remix-GTK) as base theme.
 - Icon colors based [Flat-Remix](https://github.com/daniruiz/Flat-Remix) icon pack.
-- Relod gtk and icon themes using `xsettingd`.
+- Reload gtk and icon themes using `xsettingd`.
 
 ## SETUP
 _**DEPENDENCIES**_
@@ -60,20 +57,12 @@ Run the following commands in your terminal:
 then use these option to configure it:
 
 ```bash
-  bash walsetup.sh --help # For more information 
-  bash walsetup.sh --gui # To Configure it
-  bash walsetup.sh # To Only Load the recent configuration
-```
-## EXTRA
-This script was especially made for i3wm using the debian 13 linux distro, so I highly recommend you check it out.
-
-If you happen to use .xinit with i3wm and with or not my [dotfiles](https://aKqir24/.files), I already prepared the script for this here, just put it in you `.xinit file` or just look into my [dotfiles](https://aKqir24/.files):
-
-```bash
-bash $HOME/(script_folder)/walsetup.sh # To load the configuration!!
-bash $HOME/(script_folder)/waloml.sh --alacritty --dunst \
-	--i3status-rs=~/.files/.config/i3/status/config.toml
-exec i3
+  --gui: To launch a configuration GUI and apply the configurations.
+  --setup: Show dialogs that sets up the configurations in order.
+  --reset: To remove all set features, and set them all to default.
+  --verbose: To show log messages when each step of the script is executed.
+  --help: to show how to use this script.
+  --load:loads/applies the configurations
 ```
 > [!note]
 > Not all are covered like changing the values of a wm config file, in this script yet, so feel free to commit some improvements to it...
@@ -81,11 +70,18 @@ exec i3
 ## FUTURE PLANS
 Things that I might add:
 - [x] Add verbose option.
-- [ ] Merge `waloml` & `walsetup` into one.
-- [ ] Live wallpaper support either in GIF or MP4 fomat.
+- [x] Merge `waloml` & `walsetup` into one.
+- [x] Live wallpaper support in GIF.
 - [ ] Add a custom config_dir option.
 - [ ] Custom bg-color & bgsetup setup.
 - [x] Improve wallpaper setter support in some de's.
 - [x] Full icon pywal adptation support
 - [ ] Theming support for more terminals & appplications configs.
 - [x] Fix dunst color generation.
+
+## SPEACIAL THANKS
+- `deviantfero`: [wpgtk's templates](https://github.com/deviantfero/wpgtk-templates) for the _gtk2/3_ base theme.
+- `daniruiz`: [Flat-Remix-GTK](https://github.com/daniruiz/Flat-Remix-GTK) for the _gtk4_ base theme.
+- `daniruiz`: [Flat-Remix-Icon_Pack](https://github.com/daniruiz/Flat-Remix) for the base icon pack.
+- `eylles`: [build-gradience.py](https://github.com/eylles/pywal16-libadwaita/blob/master/scripts/build-gradience.py) it helped me fixed the _gtk4_ issue.
+- `eylles`: [pywal16](https://github.com/eylles/pywal16) which make this program possible.
