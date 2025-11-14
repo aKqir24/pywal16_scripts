@@ -11,14 +11,16 @@ if $LOAD; then
 fi
 
 # Check for PYWAL16_OUT_DIR
-if [ -z "$PYWAL16_OUT_DIR" ] || [ ! -d "$PYWAL16_OUT_DIR" ]; then
+if [ -z "$PYWAL16_OUT_DIR" ]; then
 	kdialog --msgbox "The 'PYWAL16_OUT_DIR' environment variable is not defined!\n
 	Adding it in your .bashrc file"
-	echo "export PYWAL16_OUT_DIR=$DEFAULT_PYWAL16_OUT_DIR" >> "$HOME"/.bashrc || \
+	#echo "export PYWAL16_OUT_DIR=$DEFAULT_PYWAL16_OUT_DIR" >> "$HOME"/.bashrc || \
 		$(kdialog --error "The 'PYWAL16_OUT_DIR' environment variable is not defined!\n
 			You can define it in your '.bashrc', '.xinitrc', '.profile', etc. using:\n
 			export PYWAL16_OUT_DIR=/path/to/folder" ; exit 1 )
 	verbose "Setting up output directory"
+elif [ ! -d "$PYWAL16_OUT_DIR" ]; then
+	mkdir -p "$PYWAL16_OUT_DIR"
 fi
 
 # Check for PYWAL16_OUT_DIR temp folder

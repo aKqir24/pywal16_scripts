@@ -12,4 +12,4 @@ remove_files() {
 	done
 }
 
-remove_files
+remove_files ; . "$SCRIPT_PATH/startup.sh" 

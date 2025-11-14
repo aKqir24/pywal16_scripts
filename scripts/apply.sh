@@ -5,8 +5,7 @@ applyWAL() {
 	[ "$4" = "static" ] && wallCYCLE="" || wallCYCLE="--$4"
 	[ "$theming_mode" = "light" ] && colorscheme="-l" || colorscheme=
 	generateGTKTHEME & generateICONSTHEME ; verbose "Running 'pywal' for colorscheme... "
-	echo "wal $wallCYCLE $colorscheme --backend $2 -i $1 $3 -n --out-dir $PYWAL16_OUT_DIR"
-	wal "$wallCYCLE" $colorscheme --backend "$2" $3 -i "$1" -n --out-dir "$PYWAL16_OUT_DIR" || pywalerror	
+	wal "$wallCYCLE" $colorscheme --backend "$2" $3 -i "$1" -n --out-dir "$PYWAL16_OUT_DIR">/dev/null 2>&1 || pywalerror	
 	reloadTHEMES &
 }
 
@@ -36,7 +35,7 @@ generateICONSTHEME() {
 setGTK_THEME() {
 	verbose "Reloading Gtk Theme..."	
 	if grep -q "^Net/ThemeName " "$1"; then
-		sed -i 's|\(Net/ThemeName \)"[^"]*"|\1"pywal"|' "1"
+		sed -i 's|\(Net/ThemeName \)"[^"]*"|\1"pywal"|' "$1"
 	else
 		echo 'Net/ThemeName "pywal"' >> "$1"
 	fi
@@ -45,7 +44,7 @@ setGTK_THEME() {
 setICON_THEME() {
 	verbose "Reloading Icon Theme..."	
 	if grep -q "^Net/IconThemeName " "$1"; then
-		sed -i 's|\(Net/IconThemeName \)"[^"]*"|\1"pywal"|' "1"
+		sed -i 's|\(Net/IconThemeName \)"[^"]*"|\1"pywal"|' "$1"
 	else
 		echo 'Net/IconThemeName "pywal"' >> "$1"
 	fi
@@ -74,5 +73,5 @@ linkCONF_DIR() {
 }
 
 applyToPrograms() {
-	bash "$script_dir/theming/programs/genrate.sh"	
+	bash "$script_dir/theming/programs/genrate.sh" #TODO: In development	
 }

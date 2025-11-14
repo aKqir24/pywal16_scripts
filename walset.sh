@@ -54,4 +54,4 @@ applyWAL "$wallpaper_path" "$pywal16_backend" "$PYWAL_GENERATE_LIGHT" "$wallpape
 [ -f "$WALLPAPER_CACHE" ] && rm "$WALLPAPER_CACHE"
 
 # Finalize Process and making them faster by Functions
-linkCONF_DIR & select_wallpaper ; setup_wallpaper && verbose "Process finished!!"	
+linkCONF_DIR & select_wallpaper && verbose "Process finished!!"	
